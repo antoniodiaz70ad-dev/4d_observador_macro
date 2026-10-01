@@ -62,6 +62,7 @@ model User {
   manifestations  Manifestation[]
   metrics         UserMetrics[]
   nodeSnapshots   NodeSnapshot[]
+  boardSnapshots  BoardSnapshot[]
   
   // Economía Agéntica
   externalProjects ExternalProject[]
@@ -422,6 +423,22 @@ model NodeSnapshot {
   @@index([userId, nodeId])
   @@index([userId, nodeType])
   @@index([userId, createdAt])
+}
+
+model BoardSnapshot {
+  id            String   @id @default(cuid())
+  userId        String
+  label         String
+  schemaVersion Int      @default(1)
+  capturedAt    DateTime @default(now())
+  payload       Json
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, capturedAt])
+  @@index([userId, schemaVersion])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -23,7 +23,8 @@ import {
   Globe,
   Orbit,
   DollarSign,
-  ExternalLink
+  ExternalLink,
+  History
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { CoherenceMeters } from './coherence-meters';
@@ -163,6 +164,7 @@ export function DashboardContent() {
     { name: 'Economy View', icon: Orbit, action: () => router.push('/economy-view'), current: false, highlight: true, badge: '💰' },
     { name: 'Projects Hub', icon: Globe, action: () => router.push('/projects-hub'), current: false, highlight: true, badge: 'API' },
     { name: 'Tablero 3D', icon: Box, action: () => router.push('/tablero-3d'), current: false, highlight: true, badge: '3D' },
+    { name: 'Memory 4D', icon: History, action: () => router.push('/memoria-4d'), current: false, highlight: true, badge: 'MEM' },
     { name: 'Geometría Wolcoff', icon: Sparkles, action: () => router.push('/wolcoff'), current: false, highlight: true, badge: 'NEW' },
     { name: 'Proyectos', icon: Target, action: () => scrollToSection('projects-panel'), current: false },
     { name: 'Relaciones', icon: Users, action: () => scrollToSection('relationships-map'), current: false },
