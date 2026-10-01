@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "memory4d:build": "npm run build --prefix packages/memory-4d",
+    "memory4d:test": "tsx tests/memory4d-core.test.ts",
+    "memory4d:pack": "npm pack ./packages/memory-4d",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint",
