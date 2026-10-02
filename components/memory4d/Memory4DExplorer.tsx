@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, GitCompare, Pause, Play, Save, ShieldCheck } from 'lucide-react';
+import { Brain, Calendar, GitCompare, Loader2, Pause, Play, Save, ShieldCheck } from 'lucide-react';
 import {
   buildTrail,
   compareStates,
@@ -20,6 +20,16 @@ type SnapshotRow = {
   capturedAt: string;
   schemaVersion: number;
   payload: MemorySnapshot;
+};
+
+type Memory4DAnalysis = {
+  reading: string;
+  tensions: string[];
+  trajectory: string;
+  nextDecision: string;
+  confidence: number;
+  model: string;
+  source: 'gemini' | 'local-fallback';
 };
 
 function dateText(value: string | Date) {
@@ -51,6 +61,8 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
   const [playing, setPlaying] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [analysis, setAnalysis] = useState<Memory4DAnalysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
   const clockRef = useRef(createPlaybackClock(initialSnapshots));
 
   useEffect(() => {
@@ -114,6 +126,27 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
     }, speedMs);
     return () => window.clearInterval(handle);
   }, [ordered, playing, selectedId, speedMs]);
+
+  async function analyzeSelected() {
+    if (demo || !selected) return;
+    setMessage('');
+    setError('');
+    setAnalyzing(true);
+    try {
+      const response = await fetch('/api/memory-4d/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ snapshotId: selected.id, entityId: activeEntityId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudo analizar la captura.');
+      setAnalysis(data.analysis as Memory4DAnalysis);
+    } catch (err: any) {
+      setError(err?.message || 'No se pudo analizar la captura.');
+    } finally {
+      setAnalyzing(false);
+    }
+  }
 
   async function capture() {
     if (demo) return;
@@ -277,6 +310,52 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
                 </div>
               </div>
             </section>
+
+            {!demo && (
+              <section className="border-y border-slate-800 py-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="flex items-center gap-2 text-sm text-cyan-200">
+                    <Brain className="h-4 w-4" />
+                    Análisis IA de Memory 4D
+                  </h2>
+                  <button
+                    onClick={analyzeSelected}
+                    disabled={analyzing || !selected}
+                    className="inline-flex items-center gap-2 rounded border border-purple-500/50 px-3 py-2 text-sm text-purple-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+                    {analyzing ? 'Analizando...' : 'Analizar captura'}
+                  </button>
+                </div>
+                {!analysis && <p className="text-sm text-slate-400">Ejecuta el análisis para convertir la captura temporal en lectura, tensiones y siguiente decisión.</p>}
+                {analysis && (
+                  <div className="grid gap-3 text-sm lg:grid-cols-2">
+                    <article className="rounded border border-slate-800 bg-slate-900/50 p-4 lg:col-span-2">
+                      <p className="text-slate-200">{analysis.reading}</p>
+                      <p className="mt-2 text-xs text-slate-500">
+                        Modelo: {analysis.model} · confianza {Math.round(analysis.confidence * 100)}% · {analysis.source === 'gemini' ? 'Gemini' : 'fallback local'}
+                      </p>
+                    </article>
+                    <article className="rounded border border-slate-800 bg-slate-900/50 p-4">
+                      <h3 className="mb-2 font-medium text-purple-200">Tensiones</h3>
+                      <ul className="space-y-2 text-slate-300">
+                        {analysis.tensions.map((item, index) => (
+                          <li key={`${item}-${index}`}>• {item}</li>
+                        ))}
+                      </ul>
+                    </article>
+                    <article className="rounded border border-slate-800 bg-slate-900/50 p-4">
+                      <h3 className="mb-2 font-medium text-purple-200">Siguiente decisión</h3>
+                      <p className="text-slate-300">{analysis.nextDecision}</p>
+                    </article>
+                    <article className="rounded border border-slate-800 bg-slate-900/50 p-4 lg:col-span-2">
+                      <h3 className="mb-2 font-medium text-purple-200">Trayectoria</h3>
+                      <p className="text-slate-300">{analysis.trajectory}</p>
+                    </article>
+                  </div>
+                )}
+              </section>
+            )}
 
             <section className="grid gap-4 lg:grid-cols-3">
               <div className="border-y border-slate-800 py-4">
