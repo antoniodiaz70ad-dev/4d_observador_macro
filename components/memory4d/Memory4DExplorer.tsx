@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Brain, Calendar, GitCompare, Loader2, Pause, Play, Save, ShieldCheck } from 'lucide-react';
+import { Brain, Calendar, GitCompare, Loader2, Pause, Play, Save, ShieldCheck, Box, Orbit, Sparkles, ArrowUpRight } from 'lucide-react';
 import {
   buildTrail,
   compareStates,
@@ -182,10 +182,79 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
               Capturas manuales, tiempo de evento, tiempo de conocimiento, evidencia y decisiones. El historial empieza cuando se captura.
             </p>
           </div>
-          <Link href="/memoria-4d/demo" className="rounded border border-cyan-500/50 px-3 py-2 text-sm text-cyan-200">
-            Demo ficticia
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            {!demo && (
+              <Link href="/memoria-4d/demo" className="rounded border border-cyan-500/50 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-500/10">
+                Demo ficticia
+              </Link>
+            )}
+            {demo && (
+              <Link href="/auth/login" className="rounded border border-purple-500/50 px-3 py-2 text-sm text-purple-100 hover:bg-purple-500/10">
+                Entrar con mi cuenta
+              </Link>
+            )}
+          </div>
         </div>
+
+        <section className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-gradient-to-br from-cyan-950/30 via-slate-900 to-purple-950/40 p-5 shadow-2xl shadow-cyan-950/30">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" />
+          <div className="relative grid gap-4 lg:grid-cols-[1.1fr_2fr]">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-black/30 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">
+                <Sparkles className="h-3.5 w-3.5" />
+                Modo Biwal visual
+              </div>
+              <h2 className="text-2xl font-semibold text-white md:text-3xl">
+                Observa la memoria como mapa 3D/4D, no solo como historial.
+              </h2>
+              <p className="text-sm leading-6 text-slate-300">
+                Memory 4D guarda el tiempo. Las vistas visuales muestran el campo: nodos, energía, coherencia, geometría Wolcoff y órbitas de proyectos.
+              </p>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-3">
+              <Link href="/tablero-3d" className="group rounded-2xl border border-cyan-400/30 bg-black/35 p-4 transition hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-950/30">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-200 shadow-lg shadow-cyan-500/20">
+                  <Box className="h-5 w-5" />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-white">Tablero 3D</h3>
+                  <ArrowUpRight className="h-4 w-4 text-cyan-300 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  Mapa interactivo de nodos, relaciones, filtros y profundidad espacial.
+                </p>
+              </Link>
+
+              <Link href="/wolcoff" className="group rounded-2xl border border-purple-400/30 bg-black/35 p-4 transition hover:-translate-y-0.5 hover:border-purple-300 hover:bg-purple-950/30">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-purple-400/15 text-purple-200 shadow-lg shadow-purple-500/20">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-white">Wolcoff 4D</h3>
+                  <ArrowUpRight className="h-4 w-4 text-purple-300 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  Geometría viva para coherencia, energía, fricción y expansión.
+                </p>
+              </Link>
+
+              <Link href="/economy-view" className="group rounded-2xl border border-amber-300/30 bg-black/35 p-4 transition hover:-translate-y-0.5 hover:border-amber-200 hover:bg-amber-950/20">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-300/15 text-amber-100 shadow-lg shadow-amber-500/20">
+                  <Orbit className="h-5 w-5" />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-white">God View</h3>
+                  <ArrowUpRight className="h-4 w-4 text-amber-200 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  Sistema solar de proyectos, economía agéntica y decisiones.
+                </p>
+              </Link>
+            </div>
+          </div>
+        </section>
 
         {!demo && (
           <section className="grid gap-3 border-y border-slate-800 py-4 md:grid-cols-[1fr_auto]">

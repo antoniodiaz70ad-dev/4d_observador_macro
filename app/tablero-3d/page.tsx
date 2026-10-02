@@ -93,35 +93,34 @@ export default function Tablero3DPage() {
         </Button>
       </div>
 
-      {/* Instrucciones Compactas */}
-      <div className="absolute bottom-6 left-6 z-50 max-w-sm pointer-events-none">
-        <Card className="bg-black/85 backdrop-blur-md border border-cyan-500/40 p-4 pointer-events-auto shadow-xl">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Info className="h-4 w-4 text-white" />
+      {/* Instrucciones destacadas tipo Biwal */}
+      <div className="absolute bottom-6 left-6 z-50 max-w-md pointer-events-none">
+        <Card className="bg-gradient-to-br from-black/90 via-cyan-950/50 to-purple-950/70 backdrop-blur-md border-2 border-cyan-400/50 p-5 pointer-events-auto shadow-2xl shadow-cyan-500/25">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-11 h-11 bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-500/30">
+              <Info className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-cyan-300 font-semibold text-sm">Controles 3D</p>
-              <p className="text-slate-500 text-xs">Tablero Dimensional</p>
+              <p className="text-cyan-200 font-bold text-lg">🎮 Vista 3D / 4D Activa</p>
+              <p className="text-purple-200 text-xs font-medium uppercase tracking-[0.2em]">Biwal dimensional map</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <span className="text-cyan-400">🔄</span>
-              <span>Arrastrar = Rotar</span>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/10 px-3 py-2 text-slate-100">
+              <span className="text-cyan-300 font-bold">🔄</span> Arrastra para rotar
             </div>
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <span className="text-purple-400">🔍</span>
-              <span>Scroll = Zoom</span>
+            <div className="rounded-lg border border-purple-400/20 bg-purple-400/10 px-3 py-2 text-slate-100">
+              <span className="text-purple-300 font-bold">🔍</span> Zoom con scroll
             </div>
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <span className="text-pink-400">👆</span>
-              <span>Clic = Info nodo</span>
+            <div className="rounded-lg border border-pink-400/20 bg-pink-400/10 px-3 py-2 text-slate-100">
+              <span className="text-pink-300 font-bold">👆</span> Clic para info
             </div>
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <span className="text-green-400">↔️</span>
-              <span>Clic Der. = Pan</span>
+            <div className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-slate-100">
+              <span className="text-emerald-300 font-bold">↔️</span> Clic der. mueve
             </div>
+          </div>
+          <div className="mt-4 rounded-xl border border-cyan-300/30 bg-black/35 px-3 py-2 text-center text-xs font-semibold text-cyan-100">
+            ⚡ Mapa vivo: nodos, relaciones, energía, coherencia y capas 4D
           </div>
         </Card>
       </div>
