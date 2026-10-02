@@ -10,7 +10,7 @@ export default function LoginPage() {
             OBSERVADOR 4D
           </h1>
           <p className="text-slate-400 mt-2">
-            Accede a tu conciencia dimensional
+            Entra a tu centro de memoria, decisiones y visualización 4D
           </p>
         </div>
         <LoginForm />

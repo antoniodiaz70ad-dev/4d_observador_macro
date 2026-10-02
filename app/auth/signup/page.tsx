@@ -10,7 +10,7 @@ export default function SignupPage() {
             OBSERVADOR 4D
           </h1>
           <p className="text-slate-400 mt-2">
-            Expande tu conciencia dimensional
+            Crea tu cuenta para mapear proyectos, energía y decisiones
           </p>
         </div>
         <SignupForm />

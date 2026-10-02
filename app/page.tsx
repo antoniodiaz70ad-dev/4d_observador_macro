@@ -47,22 +47,21 @@ export default function HomePage() {
             </h1>
             
             <p className="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto">
-              Transforma tu realidad desde la <strong className="text-purple-400">perspectiva dimensional superior</strong>. 
-              Desarrolla la conciencia del observador y manifiesta desde la macrovisión.
+              Un centro de comando para registrar decisiones, observar patrones en 3D/4D y usar IA para convertir evidencia en próximos movimientos.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/signup">
                 <Button size="lg" className="bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white text-lg px-8 py-4">
                   <Play className="mr-2 h-5 w-5" />
-                  Comenzar Expansión
+                  Crear cuenta
                 </Button>
               </Link>
               
               <Link href="/auth/login">
                 <Button size="lg" variant="outline" className="border-purple-400/50 text-purple-300 hover:bg-purple-500/10 text-lg px-8 py-4">
                   <Eye className="mr-2 h-5 w-5" />
-                  Acceder
+                  Iniciar sesión
                 </Button>
               </Link>
             </div>
@@ -80,10 +79,10 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
                 <h3 className="text-white text-xl font-semibold mb-2">
-                  Perspectiva 4D: Observa tu vida desde arriba
+                  Ejemplo: convierte capturas en decisiones visibles
                 </h3>
                 <p className="text-slate-300">
-                  Ve tu existencia como un sistema interconectado, no como experiencias aisladas
+                  Registra un estado, compara el antes/después y abre el mapa 3D para ver relaciones, energía y tensión.
                 </p>
               </div>
             </div>
@@ -99,7 +98,7 @@ export default function HomePage() {
               La Transición <span className="text-purple-400">Dimensional</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Evoluciona del modo de manifestación 3D reactivo al 4D estratégico
+              Pasa de reaccionar a eventos sueltos a mirar evidencia, relaciones y decisiones dentro de un sistema
             </p>
           </div>
 
@@ -187,7 +186,7 @@ export default function HomePage() {
               Herramientas de <span className="text-cyan-400">Expansión</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Todo lo que necesitas para desarrollar tu conciencia de observador 4D
+              Herramientas para capturar memoria, visualizar relaciones y decidir con más claridad
             </p>
           </div>
 

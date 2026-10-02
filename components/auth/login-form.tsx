@@ -51,13 +51,13 @@ export default function LoginForm() {
           Iniciar Sesión
         </CardTitle>
         <CardDescription className="text-slate-400">
-          Ingresa a tu perspectiva dimensional
+          Entra para ver tus capturas, mapas 3D/4D, decisiones y análisis IA.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-slate-200">Email</Label>
+            <Label htmlFor="email" className="text-slate-200">Correo electrónico</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
               <Input
@@ -66,6 +66,7 @@ export default function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
+                autoComplete="email"
                 className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-400"
                 required
               />
@@ -82,6 +83,7 @@ export default function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-400"
                 required
               />
@@ -89,6 +91,8 @@ export default function LoginForm() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-slate-400 hover:text-slate-200"
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -116,17 +120,22 @@ export default function LoginForm() {
             ) : (
               <div className="flex items-center gap-2">
                 <LogIn className="h-4 w-4" />
-                Acceder al 4D
+                Iniciar sesión
               </div>
             )}
           </Button>
           
-          <p className="text-center text-slate-400 text-sm">
-            ¿No tienes cuenta?{' '}
-            <Link href="/auth/signup" className="text-purple-400 hover:text-purple-300 underline">
-              Regístrate aquí
+          <div className="space-y-2 text-center text-sm">
+            <Link href="mailto:soporte@observador4d.app?subject=Recuperar%20acceso%20a%20Observador%204D" className="text-cyan-300 hover:text-cyan-200 underline">
+              ¿Olvidaste tu contraseña?
             </Link>
-          </p>
+            <p className="text-slate-400">
+              ¿No tienes cuenta?{' '}
+              <Link href="/auth/signup" className="text-purple-400 hover:text-purple-300 underline">
+                Crear cuenta
+              </Link>
+            </p>
+          </div>
         </CardFooter>
       </form>
     </Card>

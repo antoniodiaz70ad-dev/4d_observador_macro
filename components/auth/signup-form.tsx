@@ -100,7 +100,7 @@ export default function SignupForm() {
           Crear Cuenta
         </CardTitle>
         <CardDescription className="text-slate-400">
-          Inicia tu expansión de conciencia
+          Crea tu tablero para capturar estados, visualizar relaciones y decidir con Memory 4D.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -115,6 +115,7 @@ export default function SignupForm() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Tu nombre"
+                autoComplete="name"
                 className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-cyan-400"
                 required
               />
@@ -122,7 +123,7 @@ export default function SignupForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-slate-200">Email</Label>
+            <Label htmlFor="email" className="text-slate-200">Correo electrónico</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
               <Input
@@ -131,6 +132,7 @@ export default function SignupForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
+                autoComplete="email"
                 className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-cyan-400"
                 required
               />
@@ -146,7 +148,8 @@ export default function SignupForm() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Mínimo 6 caracteres"
+                autoComplete="new-password"
                 className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-cyan-400"
                 required
               />
@@ -154,6 +157,8 @@ export default function SignupForm() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-slate-400 hover:text-slate-200"
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -166,10 +171,11 @@ export default function SignupForm() {
               <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
               <Input
                 id="confirmPassword"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Repite tu contraseña"
+                autoComplete="new-password"
                 className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-cyan-400"
                 required
               />
@@ -197,17 +203,28 @@ export default function SignupForm() {
             ) : (
               <div className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
-                Expandir Conciencia
+                Crear cuenta
               </div>
             )}
           </Button>
           
-          <p className="text-center text-slate-400 text-sm">
-            ¿Ya tienes cuenta?{' '}
-            <Link href="/auth/login" className="text-cyan-400 hover:text-cyan-300 underline">
-              Inicia sesión
-            </Link>
-          </p>
+          <div className="space-y-2 text-center text-sm">
+            <p className="text-slate-500">
+              Usa al menos 6 caracteres. Al crear una cuenta aceptas recibir acceso a tu espacio privado de Observador 4D.
+            </p>
+            <p className="text-slate-400">
+              ¿Ya tienes cuenta?{' '}
+              <Link href="/auth/login" className="text-cyan-400 hover:text-cyan-300 underline">
+                Iniciar sesión
+              </Link>
+            </p>
+            <p className="text-xs text-slate-500">
+              ¿Necesitas ayuda?{' '}
+              <Link href="mailto:soporte@observador4d.app?subject=Ayuda%20con%20registro%20Observador%204D" className="text-slate-300 hover:text-white underline">
+                Contactar soporte
+              </Link>
+            </p>
+          </div>
         </CardFooter>
       </form>
     </Card>
