@@ -237,6 +237,7 @@ export function ProjectsPanel() {
         {/* Botón Crear Proyecto Destacado */}
         <Button 
           onClick={() => setShowDialog(true)}
+          aria-label="Agregar proyecto"
           className="w-full mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20"
           size="lg"
         >
@@ -408,12 +409,30 @@ export function ProjectsPanel() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-slate-400">
-              <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No hay proyectos {filter !== 'all' ? `en estado ${filter}` : ''}</p>
-              <p className="text-sm mt-1">
-                Los proyectos representan tus objetivos manifestándose en 4D
+            <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-6 text-center text-slate-300">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-500/15 text-cyan-300">
+                <Target className="h-7 w-7" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">
+                {filter !== 'all' ? `No hay proyectos en estado ${filter}` : 'Crea tu primer proyecto'}
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-400">
+                Un proyecto es el primer nodo de tu mapa 4D. Puede ser un negocio, una relación, un hábito, una inversión o una meta personal que quieras observar con claridad.
               </p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-cyan-200">
+                {['Negocio', 'Salud', 'Relación', 'Creatividad'].map(example => (
+                  <span key={example} className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1">
+                    {example}
+                  </span>
+                ))}
+              </div>
+              <Button
+                onClick={() => setShowDialog(true)}
+                className="mt-5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Crear primer proyecto
+              </Button>
             </div>
           )}
         </div>

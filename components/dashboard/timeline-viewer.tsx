@@ -222,6 +222,7 @@ export function TimelineViewer() {
           <Button 
             variant="ghost" 
             size="sm"
+            aria-label="Agregar evento al timeline"
             onClick={() => setShowAddForm(!showAddForm)}
             className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-500/20"
           >
@@ -392,12 +393,28 @@ export function TimelineViewer() {
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-slate-400">
-                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No hay eventos en este período</p>
-                <p className="text-sm mt-1">
-                  La línea temporal se construye con tus proyectos y manifestaciones
+              <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-6 text-center text-slate-300">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/15 text-indigo-300">
+                  <Calendar className="h-7 w-7" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">No hay eventos en este período</h3>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-400">
+                  Registra una decisión, señal, avance o fecha importante. El timeline convierte tus acciones sueltas en una historia fácil de revisar.
                 </p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-indigo-200">
+                  {['Decisión', 'Señal', 'Meta', 'Resultado'].map(example => (
+                    <span key={example} className="rounded-full border border-indigo-400/20 bg-indigo-400/10 px-3 py-1">
+                      {example}
+                    </span>
+                  ))}
+                </div>
+                <Button
+                  onClick={() => setShowAddForm(true)}
+                  className="mt-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Agregar evento
+                </Button>
               </div>
             )}
           </div>

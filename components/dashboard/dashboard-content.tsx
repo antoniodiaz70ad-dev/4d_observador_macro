@@ -24,7 +24,9 @@ import {
   Orbit,
   DollarSign,
   ExternalLink,
-  History
+  History,
+  ArrowRight,
+  CheckCircle2
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { CoherenceMeters } from './coherence-meters';
@@ -135,10 +137,16 @@ export function DashboardContent() {
   };
 
   const handleNewRelationship = () => {
-    // Scroll to relationships map
+    // Scroll to relationships map and open the add form when available
     const relPanel = document.querySelector('[data-testid="relationships-map"]');
     if (relPanel) {
-      relPanel.scrollIntoView({ behavior: 'smooth' });
+      relPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        const addButton = relPanel.querySelector('button[aria-label="Agregar relación"]');
+        if (addButton) {
+          (addButton as HTMLButtonElement).click();
+        }
+      }, 500);
     }
   };
 
@@ -157,6 +165,50 @@ export function DashboardContent() {
       setSidebarOpen(false); // Close mobile sidebar after navigation
     }
   };
+
+  const hasProjects = gameBoardData.projects.length > 0;
+  const hasRelationships = gameBoardData.relationships.length > 0;
+  const hasEntries = gameBoardData.entries.length > 0;
+  const setupSteps = [
+    {
+      label: 'Primer proyecto',
+      done: hasProjects,
+      description: 'Define el objetivo que quieres observar.',
+      action: handleNewProject,
+      actionLabel: 'Crear proyecto',
+      icon: Target,
+      accent: 'cyan'
+    },
+    {
+      label: 'Primera relación',
+      done: hasRelationships,
+      description: 'Conecta a una persona o aliado clave.',
+      action: handleNewRelationship,
+      actionLabel: 'Agregar relación',
+      icon: Users,
+      accent: 'pink'
+    },
+    {
+      label: 'Primer registro diario',
+      done: hasEntries,
+      description: 'Captura señales, decisiones y energía del día.',
+      action: () => router.push('/daily-mapping'),
+      actionLabel: 'Registrar día',
+      icon: Calendar,
+      accent: 'violet'
+    }
+  ];
+  const setupProgress = setupSteps.filter(step => step.done).length;
+  const nextStep = setupSteps.find(step => !step.done) || {
+    label: 'Leer el patrón completo',
+    description: 'Ya tienes base para analizar tu mapa con Memory 4D.',
+    action: () => router.push('/memoria-4d'),
+    actionLabel: 'Abrir Memory 4D',
+    icon: History,
+    accent: 'emerald',
+    done: false
+  };
+  const NextStepIcon = nextStep.icon;
 
   const navigationItems = [
     { name: 'Vista General', icon: Home, action: () => window.scrollTo({ top: 0, behavior: 'smooth' }), current: true },
@@ -325,6 +377,86 @@ export function DashboardContent() {
         {/* Dashboard Grid */}
         <main className="p-4 lg:p-6 overflow-x-hidden">
           <div className="w-full max-w-full">
+            <Card className="mb-6 overflow-hidden border-cyan-500/30 bg-gradient-to-br from-slate-900/95 via-purple-950/40 to-cyan-950/30 backdrop-blur-sm shadow-2xl shadow-cyan-950/20">
+              <CardContent className="p-5 lg:p-6">
+                <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div>
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Guía de inicio
+                    </div>
+                    <h2 className="text-2xl font-bold text-white lg:text-3xl">
+                      Tu siguiente mejor paso
+                    </h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+                      El Observador 4D funciona mejor cuando tiene tres señales mínimas: un proyecto, una relación y un registro diario. Con eso puede empezar a mostrar patrones, energía y posibles decisiones.
+                    </p>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                      {setupSteps.map((step, index) => {
+                        const StepIcon = step.icon;
+                        return (
+                          <button
+                            key={step.label}
+                            type="button"
+                            onClick={step.action}
+                            className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-slate-800/70 ${step.done ? 'border-emerald-400/40 bg-emerald-500/10' : 'border-slate-700/70 bg-slate-900/60 hover:border-cyan-400/40'}`}
+                          >
+                            <div className="mb-3 flex items-center justify-between gap-2">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-cyan-200">
+                                <StepIcon className="h-5 w-5" />
+                              </div>
+                              {step.done ? (
+                                <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                              ) : (
+                                <span className="rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-400">{index + 1}</span>
+                              )}
+                            </div>
+                            <p className="font-semibold text-slate-100">{step.label}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-400">{step.description}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-purple-400/30 bg-black/30 p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-500 text-white shadow-lg shadow-purple-500/20">
+                        <NextStepIcon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.22em] text-purple-200">Ahora conviene</p>
+                        <h3 className="text-lg font-bold text-white">{nextStep.label}</h3>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-sm leading-relaxed text-slate-300">{nextStep.description}</p>
+                    <div className="mt-5 rounded-full bg-slate-800/80 p-1">
+                      <div
+                        className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 transition-all"
+                        style={{ width: `${Math.max(12, (setupProgress / setupSteps.length) * 100)}%` }}
+                      />
+                    </div>
+                    <p className="mt-2 text-xs text-slate-400">Base del mapa: {setupProgress}/{setupSteps.length} señales listas</p>
+                    <div className="mt-5 grid gap-2">
+                      <Button onClick={nextStep.action} className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500">
+                        {nextStep.actionLabel}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" onClick={() => router.push('/memoria-4d')} className="border-purple-500/30 text-purple-200 hover:bg-purple-500/20">
+                          Memory 4D
+                        </Button>
+                        <Button variant="outline" onClick={() => router.push('/tablero-3d')} className="border-cyan-500/30 text-cyan-200 hover:bg-cyan-500/20">
+                          Tablero 3D
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Tablero de Juego 4D - Visión Aérea Principal */}
             <div className="mb-6" data-testid="game-board">
               <div className="mb-4 text-center">
