@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Brain, Calendar, GitCompare, Loader2, Pause, Play, Save, ShieldCheck, Box, Orbit, Sparkles, ArrowUpRight } from 'lucide-react';
+import { Activity, ArrowUpRight, Box, Brain, Calendar, Database, Eye, GitCompare, Loader2, Orbit, Pause, Play, Save, ShieldCheck, Sparkles, Target } from 'lucide-react';
 import {
   buildTrail,
   compareStates,
@@ -111,6 +111,16 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
         mode: 'availableThen',
       }).values()]
     : [];
+  const latestSnapshot = ordered[ordered.length - 1];
+  const allStates = ordered.flatMap(row => row.payload.records.map(record => record.state));
+  const energyValues = allStates
+    .map(state => state.metrics.energy?.value)
+    .filter((value): value is number => typeof value === 'number');
+  const averageEnergy = energyValues.length
+    ? Math.round((energyValues.reduce((sum, value) => sum + value, 0) / energyValues.length) * 100)
+    : null;
+  const decisionCount = ordered.reduce((sum, row) => sum + row.payload.decisions.length, 0);
+  const activeEntityLabel = activeState?.entity.label || entities.find(entity => entity.id === activeEntityId)?.label || 'Sin entidad';
 
   useEffect(() => {
     clockRef.current = createPlaybackClock(ordered);
@@ -170,31 +180,81 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <Link href="/dashboard" className="text-sm text-cyan-300 hover:text-cyan-100">
-              Volver al dashboard
-            </Link>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal">Memory 4D</h1>
-            <p className="mt-1 max-w-3xl text-sm text-slate-300">
-              Capturas manuales, tiempo de evento, tiempo de conocimiento, evidencia y decisiones. El historial empieza cuando se captura.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {!demo && (
-              <Link href="/memoria-4d/demo" className="rounded border border-cyan-500/50 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-500/10">
-                Demo ficticia
+    <main className="min-h-screen overflow-hidden bg-black text-slate-100">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_80%_10%,rgba(168,85,247,0.14),transparent_30%),radial-gradient(circle_at_50%_90%,rgba(245,158,11,0.10),transparent_28%)]" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(148,163,184,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.04)_1px,transparent_1px)] bg-[size:72px_72px] opacity-30" />
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-8">
+        <section className="relative overflow-hidden rounded-[2rem] border border-cyan-400/20 bg-gradient-to-br from-slate-950/95 via-slate-900/90 to-purple-950/40 p-6 shadow-2xl shadow-cyan-950/40 md:p-8">
+          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/4 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" />
+          <div className="relative grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+            <div>
+              <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-cyan-300 hover:text-cyan-100">
+                <Eye className="h-4 w-4" />
+                Volver al dashboard
               </Link>
-            )}
-            {demo && (
-              <Link href="/auth/login" className="rounded border border-purple-500/50 px-3 py-2 text-sm text-purple-100 hover:bg-purple-500/10">
-                Entrar con mi cuenta
-              </Link>
-            )}
+              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-cyan-100">
+                <Database className="h-3.5 w-3.5" />
+                Centro de memoria temporal
+              </div>
+              <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
+                Memory 4D
+                <span className="block bg-gradient-to-r from-cyan-200 via-purple-200 to-amber-100 bg-clip-text text-2xl text-transparent md:text-4xl">
+                  observa tiempo, evidencia y decisiones.
+                </span>
+              </h1>
+              <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
+                Capturas manuales, tiempo de evento, tiempo de conocimiento, evidencia y decisiones. El historial empieza cuando se captura y se puede leer como mapa 3D/4D.
+              </p>
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                {!demo && (
+                  <Link href="/memoria-4d/demo" className="rounded-xl border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-500/20">
+                    Ver demo ficticia
+                  </Link>
+                )}
+                {demo && (
+                  <Link href="/auth/login" className="rounded-xl border border-purple-500/50 bg-purple-500/10 px-4 py-2 text-sm text-purple-100 hover:bg-purple-500/20">
+                    Entrar con mi cuenta
+                  </Link>
+                )}
+                <Link href="/tablero-3d" className="rounded-xl border border-slate-700 bg-black/30 px-4 py-2 text-sm text-slate-200 hover:border-cyan-400/60 hover:text-cyan-100">
+                  Abrir tablero 3D
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid content-start gap-3 sm:grid-cols-2">
+              <article className="rounded-2xl border border-cyan-400/20 bg-black/35 p-4 shadow-lg shadow-cyan-950/20">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-200">
+                  <Database className="h-5 w-5" />
+                </div>
+                <p className="text-3xl font-semibold text-white">{ordered.length}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">capturas</p>
+              </article>
+              <article className="rounded-2xl border border-purple-400/20 bg-black/35 p-4 shadow-lg shadow-purple-950/20">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-purple-400/15 text-purple-200">
+                  <Target className="h-5 w-5" />
+                </div>
+                <p className="text-3xl font-semibold text-white">{entities.length}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">entidades</p>
+              </article>
+              <article className="rounded-2xl border border-emerald-400/20 bg-black/35 p-4 shadow-lg shadow-emerald-950/20">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400/15 text-emerald-200">
+                  <Activity className="h-5 w-5" />
+                </div>
+                <p className="text-3xl font-semibold text-white">{averageEnergy === null ? '—' : `${averageEnergy}%`}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">energía media</p>
+              </article>
+              <article className="rounded-2xl border border-amber-300/20 bg-black/35 p-4 shadow-lg shadow-amber-950/20">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-300/15 text-amber-100">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <p className="text-3xl font-semibold text-white">{decisionCount}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">decisiones</p>
+              </article>
+            </div>
           </div>
-        </div>
+        </section>
 
         <section className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-gradient-to-br from-cyan-950/30 via-slate-900 to-purple-950/40 p-5 shadow-2xl shadow-cyan-950/30">
           <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
@@ -206,7 +266,7 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
                 Modo Biwal visual
               </div>
               <h2 className="text-2xl font-semibold text-white md:text-3xl">
-                Observa la memoria como mapa 3D/4D, no solo como historial.
+                Cambia de historial a campo visual.
               </h2>
               <p className="text-sm leading-6 text-slate-300">
                 Memory 4D guarda el tiempo. Las vistas visuales muestran el campo: nodos, energía, coherencia, geometría Wolcoff y órbitas de proyectos.
@@ -257,34 +317,37 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
         </section>
 
         {!demo && (
-          <section className="grid gap-3 border-y border-slate-800 py-4 md:grid-cols-[1fr_auto]">
+          <section className="rounded-3xl border border-slate-800/80 bg-slate-950/80 p-4 shadow-xl shadow-black/30 md:p-5">
+            <div className="grid gap-3 md:grid-cols-[1fr_auto]">
             <label className="text-sm text-slate-300">
-              Titulo de nueva captura
+              <span className="flex items-center gap-2 text-cyan-200"><Save className="h-4 w-4" /> Nueva captura temporal</span>
               <input
                 value={label}
                 onChange={event => setLabel(event.target.value)}
-                className="mt-1 w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-cyan-400/70 focus:ring-2 focus:ring-cyan-400/20"
                 maxLength={120}
-                placeholder="Antes de una decision importante"
+                placeholder="Antes de una decisión importante"
               />
             </label>
             <button
               onClick={capture}
               disabled={!label.trim()}
-              className="inline-flex items-center justify-center gap-2 rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40 md:self-end"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-600 to-purple-600 px-5 py-3 text-sm font-medium text-white shadow-lg shadow-cyan-950/30 disabled:cursor-not-allowed disabled:opacity-40 md:self-end"
             >
               <Save className="h-4 w-4" />
               Guardar estado
             </button>
+            </div>
           </section>
         )}
 
-        {error && <p className="rounded border border-red-500/40 bg-red-950/30 px-3 py-2 text-sm text-red-200">{error}</p>}
-        {message && <p className="rounded border border-emerald-500/40 bg-emerald-950/30 px-3 py-2 text-sm text-emerald-200">{message}</p>}
+        {error && <p className="rounded-2xl border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-200">{error}</p>}
+        {message && <p className="rounded-2xl border border-emerald-500/40 bg-emerald-950/40 px-4 py-3 text-sm text-emerald-200">{message}</p>}
 
         {!ordered.length && (
-          <section className="border-y border-slate-800 py-10 text-slate-300">
-            Todavia no hay capturas. Guarda el primer estado para empezar la memoria temporal.
+          <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-10 text-center text-slate-300">
+            <Database className="mx-auto mb-4 h-10 w-10 text-cyan-300" />
+            Todavía no hay capturas. Guarda el primer estado para empezar la memoria temporal.
           </section>
         )}
 
