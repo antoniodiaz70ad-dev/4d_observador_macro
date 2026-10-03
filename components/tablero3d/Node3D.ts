@@ -22,83 +22,202 @@ export class Node3D {
     nodeData: NodeData,
     shadowGenerator: BABYLON.ShadowGenerator
   ): BABYLON.Mesh {
-    // Calcular coherencia (si no viene, usar energía como proxy)
-    const coherence = nodeData.coherence ?? nodeData.energy;
+    const isObserver = nodeData.type === 'self';
+    const isProject = nodeData.type === 'project';
+    const isRelationship = nodeData.type === 'relationship';
+
+    // La evidencia clínica/productiva se decide en el panel; el mapa debe conservar lectura visual estable.
+    const measuredCoherence = nodeData.coherence ?? nodeData.energy;
+    const coherence = isObserver || isProject || isRelationship
+      ? Math.max(measuredCoherence, 0.68)
+      : measuredCoherence;
     const wolcoff = getWolcoffDistortion(coherence);
     
-    // Crear esfera 3D
-    const sphere = BABYLON.MeshBuilder.CreateSphere(
-      nodeData.id,
-      {
-        diameter: nodeData.size,
-        segments: 32,
-      },
-      scene
-    );
+    const baseColor = BABYLON.Color3.FromHexString(nodeData.color);
+
+    // Crear geometría principal según tipo: ojo / cubo / persona
+    let sphere: BABYLON.Mesh;
+    if (isProject) {
+      sphere = BABYLON.MeshBuilder.CreateBox(
+        nodeData.id,
+        { size: nodeData.size * 0.95 },
+        scene
+      );
+      sphere.rotation = new BABYLON.Vector3(Math.PI / 10, Math.PI / 4, -Math.PI / 18);
+    } else {
+      sphere = BABYLON.MeshBuilder.CreateSphere(
+        nodeData.id,
+        {
+          diameter: nodeData.size,
+          segments: 48,
+        },
+        scene
+      );
+    }
 
     // Posición con eje Z real (Y es altura en Babylon.js)
     const basePosition = new BABYLON.Vector3(nodeData.x, nodeData.z, nodeData.y);
     sphere.position = basePosition.clone();
-    
-    // Configurar recepción de sombras
     sphere.receiveShadows = false;
 
-    // Material con glow - Color puede ser Wolcoff o el original
-    const material = new BABYLON.StandardMaterial(`${nodeData.id}_mat`, scene);
-    const baseColor = BABYLON.Color3.FromHexString(nodeData.color);
     const wolcoffColorHex = getWolcoffColor(coherence);
     const wolcoffColor = BABYLON.Color3.FromHexString(wolcoffColorHex);
-    
-    // Mezclar color original con color Wolcoff según coherencia
-    // Alta coherencia = más color Wolcoff (dorado), baja = color original (puede ser gris)
-    const finalColor = coherence > 0.5 
-      ? BABYLON.Color3.Lerp(baseColor, wolcoffColor, 0.3)
-      : BABYLON.Color3.Lerp(baseColor, wolcoffColor, 0.5);
-    
-    material.diffuseColor = finalColor;
-    material.emissiveColor = finalColor.scale(0.4);
-    material.specularColor = new BABYLON.Color3(1, 1, 1);
-    material.specularPower = 32;
-    material.alpha = 0.95;
+    const finalColor = isObserver || isProject || isRelationship
+      ? baseColor
+      : coherence > 0.5
+        ? BABYLON.Color3.Lerp(baseColor, wolcoffColor, 0.3)
+        : BABYLON.Color3.Lerp(baseColor, wolcoffColor, 0.5);
 
+    const material = new BABYLON.StandardMaterial(`${nodeData.id}_mat`, scene);
+    material.diffuseColor = finalColor;
+    material.emissiveColor = finalColor.scale(isProject ? 0.65 : 0.5);
+    material.specularColor = new BABYLON.Color3(1, 1, 1);
+    material.specularPower = isProject ? 96 : 64;
+    material.alpha = isProject ? 0.72 : 0.82;
+    material.backFaceCulling = false;
     sphere.material = material;
 
-    // Habilitar sombras
+    // Borde brillante para el cubo, como la referencia visual
+    if (isProject) {
+      sphere.enableEdgesRendering();
+      sphere.edgesWidth = 4;
+      sphere.edgesColor = new BABYLON.Color4(0.78, 0.62, 1, 0.95);
+    }
+
     shadowGenerator.addShadowCaster(sphere);
     sphere.receiveShadows = true;
 
-    // Halo glow (outer glow)
+    // Halo externo translúcido
     const glow = BABYLON.MeshBuilder.CreateSphere(
       `${nodeData.id}_glow`,
       {
-        diameter: nodeData.size * 1.5,
-        segments: 16,
+        diameter: nodeData.size * (isProject ? 1.85 : isObserver ? 1.55 : 1.45),
+        segments: 32,
       },
       scene
     );
     glow.position = sphere.position.clone();
-    
-    const glowMat = new BABYLON.StandardMaterial(`${nodeData.id}_glow_mat`, scene);
-    glowMat.emissiveColor = finalColor;
-    glowMat.alpha = 0.15;
-    glowMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
-    glow.material = glowMat;
 
-    // Anillo interno (core)
-    const core = BABYLON.MeshBuilder.CreateSphere(
-      `${nodeData.id}_core`,
-      {
-        diameter: nodeData.size * 0.4,
-        segments: 16,
-      },
-      scene
-    );
-    core.position = sphere.position.clone();
-    
+    const glowMat = new BABYLON.StandardMaterial(`${nodeData.id}_glow_mat`, scene);
+    glowMat.diffuseColor = finalColor;
+    glowMat.emissiveColor = finalColor;
+    glowMat.alpha = isObserver ? 0.18 : isProject ? 0.11 : 0.16;
+    glowMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
+    glowMat.backFaceCulling = false;
+    glow.material = glowMat;
+    glow.isPickable = false;
+
+    // Núcleo / icono central según tipo
+    let core: BABYLON.Mesh;
+    if (isProject) {
+      core = BABYLON.MeshBuilder.CreateBox(
+        `${nodeData.id}_core`,
+        { size: nodeData.size * 0.34 },
+        scene
+      );
+      core.rotation = sphere.rotation.clone();
+    } else if (isRelationship) {
+      core = BABYLON.MeshBuilder.CreateSphere(
+        `${nodeData.id}_core`,
+        { diameter: nodeData.size * 0.26, segments: 24 },
+        scene
+      );
+      core.position = sphere.position.clone().add(new BABYLON.Vector3(0, nodeData.size * 0.08, -nodeData.size * 0.47));
+    } else {
+      core = BABYLON.MeshBuilder.CreateSphere(
+        `${nodeData.id}_core`,
+        { diameter: nodeData.size * 0.18, segments: 24 },
+        scene
+      );
+      core.position = sphere.position.clone().add(new BABYLON.Vector3(0, 0, -nodeData.size * 0.5));
+    }
+
+    if (isProject) {
+      core.position = sphere.position.clone();
+    }
+
     const coreMat = new BABYLON.StandardMaterial(`${nodeData.id}_core_mat`, scene);
-    coreMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
-    coreMat.alpha = 0.9;
+    coreMat.diffuseColor = new BABYLON.Color3(0.88, 0.82, 1);
+    coreMat.emissiveColor = isProject
+      ? new BABYLON.Color3(0.9, 0.75, 1)
+      : isRelationship
+        ? new BABYLON.Color3(0.72, 1, 0.82)
+        : new BABYLON.Color3(0.58, 1, 1);
+    coreMat.alpha = 0.96;
+    coreMat.specularPower = 96;
     core.material = coreMat;
+    core.isPickable = false;
+
+    let eyeRing: BABYLON.Mesh | null = null;
+    let pupil: BABYLON.Mesh | null = null;
+    let relationshipBody: BABYLON.Mesh | null = null;
+    let projectOrbit: BABYLON.Mesh | null = null;
+
+    // Ojo 3D del observador: aro elíptico + pupila sobre la esfera turquesa
+    if (isObserver) {
+      eyeRing = BABYLON.MeshBuilder.CreateTorus(
+        `${nodeData.id}_eye_ring`,
+        { diameter: nodeData.size * 0.68, thickness: nodeData.size * 0.045, tessellation: 72 },
+        scene
+      );
+      eyeRing.position = sphere.position.clone().add(new BABYLON.Vector3(0, 0, -nodeData.size * 0.53));
+      eyeRing.scaling.x = 1.65;
+      eyeRing.scaling.y = 0.55;
+      eyeRing.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+      const eyeMat = new BABYLON.StandardMaterial(`${nodeData.id}_eye_ring_mat`, scene);
+      eyeMat.emissiveColor = new BABYLON.Color3(0.42, 1, 1);
+      eyeMat.diffuseColor = new BABYLON.Color3(0.42, 1, 1);
+      eyeMat.alpha = 0.98;
+      eyeRing.material = eyeMat;
+      eyeRing.isPickable = false;
+
+      pupil = BABYLON.MeshBuilder.CreateSphere(
+        `${nodeData.id}_pupil`,
+        { diameter: nodeData.size * 0.22, segments: 24 },
+        scene
+      );
+      pupil.position = sphere.position.clone().add(new BABYLON.Vector3(0, 0, -nodeData.size * 0.6));
+      const pupilMat = new BABYLON.StandardMaterial(`${nodeData.id}_pupil_mat`, scene);
+      pupilMat.emissiveColor = new BABYLON.Color3(0.85, 1, 1);
+      pupilMat.diffuseColor = new BABYLON.Color3(0.75, 1, 1);
+      pupil.material = pupilMat;
+      pupil.isPickable = false;
+    }
+
+    // Icono de persona para relaciones: cabeza + cuerpo, como la fotografía
+    if (isRelationship) {
+      relationshipBody = BABYLON.MeshBuilder.CreateSphere(
+        `${nodeData.id}_person_body`,
+        { diameter: nodeData.size * 0.42, segments: 24 },
+        scene
+      );
+      relationshipBody.position = sphere.position.clone().add(new BABYLON.Vector3(0, -nodeData.size * 0.22, -nodeData.size * 0.47));
+      relationshipBody.scaling.y = 0.62;
+      const bodyMat = new BABYLON.StandardMaterial(`${nodeData.id}_person_body_mat`, scene);
+      bodyMat.emissiveColor = new BABYLON.Color3(0.72, 1, 0.82);
+      bodyMat.diffuseColor = new BABYLON.Color3(0.72, 1, 0.82);
+      bodyMat.alpha = 0.95;
+      relationshipBody.material = bodyMat;
+      relationshipBody.isPickable = false;
+    }
+
+    // Aro orbital fino para reforzar la selección visual del nodo proyecto
+    if (isProject) {
+      projectOrbit = BABYLON.MeshBuilder.CreateTorus(
+        `${nodeData.id}_orbit`,
+        { diameter: nodeData.size * 1.65, thickness: nodeData.size * 0.018, tessellation: 96 },
+        scene
+      );
+      projectOrbit.position = sphere.position.clone();
+      projectOrbit.rotation.x = Math.PI / 2.15;
+      const orbitMat = new BABYLON.StandardMaterial(`${nodeData.id}_orbit_mat`, scene);
+      orbitMat.emissiveColor = new BABYLON.Color3(0.48, 0.55, 1);
+      orbitMat.diffuseColor = new BABYLON.Color3(0.48, 0.55, 1);
+      orbitMat.alpha = 0.6;
+      orbitMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
+      projectOrbit.material = orbitMat;
+      projectOrbit.isPickable = false;
+    }
 
     // Etiqueta persistente del nodo
     const labelWidth = 512;
@@ -299,6 +418,35 @@ export class Node3D {
         // Core apagándose
         const coreIntensity = 0.3 + Math.random() * 0.3;
         coreMat.emissiveColor = new BABYLON.Color3(coreIntensity * 0.8, coreIntensity * 0.7, coreIntensity * 0.7);
+      }
+
+      if (isObserver) {
+        core.position.x = sphere.position.x;
+        core.position.y = sphere.position.y;
+        core.position.z = sphere.position.z - nodeData.size * 0.5;
+        if (eyeRing) {
+          eyeRing.position.x = sphere.position.x;
+          eyeRing.position.y = sphere.position.y;
+          eyeRing.position.z = sphere.position.z - nodeData.size * 0.53;
+        }
+        if (pupil) {
+          pupil.position.x = sphere.position.x;
+          pupil.position.y = sphere.position.y;
+          pupil.position.z = sphere.position.z - nodeData.size * 0.6;
+        }
+      } else if (isRelationship) {
+        core.position.x = sphere.position.x;
+        core.position.y = sphere.position.y + nodeData.size * 0.08;
+        core.position.z = sphere.position.z - nodeData.size * 0.47;
+        if (relationshipBody) {
+          relationshipBody.position.x = sphere.position.x;
+          relationshipBody.position.y = sphere.position.y - nodeData.size * 0.22;
+          relationshipBody.position.z = sphere.position.z - nodeData.size * 0.47;
+        }
+      } else if (isProject && projectOrbit) {
+        projectOrbit.position.x = sphere.position.x;
+        projectOrbit.position.y = sphere.position.y;
+        projectOrbit.position.z = sphere.position.z;
       }
 
       labelPlane.position.x = sphere.position.x;
