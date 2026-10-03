@@ -26,7 +26,9 @@ import {
   ExternalLink,
   History,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  ListChecks,
+  Compass
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { CoherenceMeters } from './coherence-meters';
@@ -210,6 +212,20 @@ export function DashboardContent() {
     done: false
   };
   const NextStepIcon = nextStep.icon;
+  const hasMinimumSignals = hasProjects && hasRelationships && hasEntries;
+  const missingSignals = setupSteps.filter(step => !step.done).map(step => step.label.toLowerCase());
+  const simpleActions = [
+    { label: 'Registrar hoy', description: 'Captura señales, energía y decisiones del día.', icon: Calendar, action: () => router.push('/daily-mapping') },
+    { label: 'Crear proyecto', description: 'Define lo que quieres observar o mover.', icon: Target, action: handleNewProject },
+    { label: 'Agregar relación', description: 'Conecta personas, aliados o dependencias.', icon: Users, action: handleNewRelationship },
+    { label: 'Ver historial', description: 'Revisa cómo evolucionan tus señales.', icon: History, action: () => scrollToSection('timeline-viewer') },
+  ];
+  const explorerActions = [
+    { label: 'Memory 4D', description: 'Compara tu mapa con memoria y patrones.', icon: Brain, action: () => router.push('/memoria-4d') },
+    { label: 'Tablero 3D', description: 'Explora nodos y relaciones en vista espacial.', icon: Box, action: () => router.push('/tablero-3d') },
+    { label: 'Modo Decisión', description: hasMinimumSignals ? 'Analiza una decisión con señales reales.' : 'Se activa mejor cuando completes las tres señales.', icon: Crosshair, action: () => setShowDecisionMode(true) },
+    { label: 'Projects Hub', description: 'Conecta y organiza fuentes de trabajo.', icon: Globe, action: () => router.push('/projects-hub') },
+  ];
 
   const navigationItems = [
     { name: 'Vista General', icon: Home, action: () => window.scrollTo({ top: 0, behavior: 'smooth' }), current: true },
@@ -381,19 +397,19 @@ export function DashboardContent() {
         {/* Dashboard Grid */}
         <main className="p-4 lg:p-6 overflow-x-hidden">
           <div className="w-full max-w-full">
-            <Card className="mb-6 overflow-hidden border-cyan-500/30 bg-gradient-to-br from-slate-900/95 via-purple-950/40 to-cyan-950/30 backdrop-blur-sm shadow-2xl shadow-cyan-950/20">
+            <Card data-testid="today-guidance" className="mb-6 overflow-hidden border-cyan-500/30 bg-gradient-to-br from-slate-900/95 via-purple-950/40 to-cyan-950/30 backdrop-blur-sm shadow-2xl shadow-cyan-950/20">
               <CardContent className="p-5 lg:p-6">
-                <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="grid gap-5 xl:grid-cols-[1fr_0.8fr]">
                   <div>
                     <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Guía de inicio
+                      <ListChecks className="h-3.5 w-3.5" />
+                      Hoy
                     </div>
                     <h2 className="text-2xl font-bold text-white lg:text-3xl">
-                      Tu siguiente mejor paso
+                      Empieza aquí y sigue una ruta clara
                     </h2>
                     <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
-                      El Observador 4D funciona mejor cuando tiene tres señales mínimas: un proyecto, una relación y un registro diario. Con eso puede empezar a mostrar patrones, energía y posibles decisiones.
+                      Captura lo mínimo, revisa qué cambió y después explora el tablero. Los indicadores se activan cuando hay evidencia suficiente: un proyecto, una relación y un registro diario.
                     </p>
 
                     <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -422,6 +438,60 @@ export function DashboardContent() {
                         );
                       })}
                     </div>
+
+                    <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                      <div className="rounded-2xl border border-slate-700/70 bg-black/20 p-4">
+                        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-cyan-100">
+                          <Compass className="h-4 w-4" />
+                          Ruta simple
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {simpleActions.map((item) => {
+                            const ItemIcon = item.icon;
+                            return (
+                              <button
+                                key={item.label}
+                                type="button"
+                                onClick={item.action}
+                                className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-3 text-left transition hover:border-cyan-400/40 hover:bg-slate-800/80"
+                              >
+                                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-100">
+                                  <ItemIcon className="h-4 w-4 text-cyan-300" />
+                                  {item.label}
+                                </div>
+                                <p className="text-xs leading-relaxed text-slate-400">{item.description}</p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-purple-500/30 bg-purple-950/10 p-4">
+                        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-purple-100">
+                          <Sparkles className="h-4 w-4" />
+                          Explorar cuando quieras profundidad
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {explorerActions.map((item) => {
+                            const ItemIcon = item.icon;
+                            return (
+                              <button
+                                key={item.label}
+                                type="button"
+                                onClick={item.action}
+                                className="rounded-xl border border-purple-500/20 bg-slate-900/50 p-3 text-left transition hover:border-purple-300/50 hover:bg-purple-950/30"
+                              >
+                                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-100">
+                                  <ItemIcon className="h-4 w-4 text-purple-300" />
+                                  {item.label}
+                                </div>
+                                <p className="text-xs leading-relaxed text-slate-400">{item.description}</p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="rounded-3xl border border-purple-400/30 bg-black/30 p-5">
@@ -430,7 +500,7 @@ export function DashboardContent() {
                         <NextStepIcon className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.22em] text-purple-200">Ahora conviene</p>
+                        <p className="text-xs uppercase tracking-[0.22em] text-purple-200">Siguiente paso recomendado</p>
                         <h3 className="text-lg font-bold text-white">{nextStep.label}</h3>
                       </div>
                     </div>
@@ -442,19 +512,28 @@ export function DashboardContent() {
                       />
                     </div>
                     <p className="mt-2 text-xs text-slate-400">Base del mapa: {setupProgress}/{setupSteps.length} señales listas</p>
+
+                    <div className="mt-4 rounded-2xl border border-slate-700/70 bg-slate-950/50 p-4">
+                      <p className="text-sm font-semibold text-slate-100">Claridad de indicadores</p>
+                      {hasMinimumSignals ? (
+                        <p className="mt-2 text-xs leading-relaxed text-emerald-200">
+                          Ya hay señales mínimas para calcular patrones. Revisa coherencia, energía y decisiones con contexto.
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                          Aún falta {missingSignals.join(', ')}. Hasta completarlo, la app debe mostrar “Sin datos suficientes” en lugar de porcentajes.
+                        </p>
+                      )}
+                    </div>
+
                     <div className="mt-5 grid gap-2">
                       <Button onClick={nextStep.action} className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500">
                         {nextStep.actionLabel}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button variant="outline" onClick={() => router.push('/memoria-4d')} className="border-purple-500/30 text-purple-200 hover:bg-purple-500/20">
-                          Memory 4D
-                        </Button>
-                        <Button variant="outline" onClick={() => router.push('/tablero-3d')} className="border-cyan-500/30 text-cyan-200 hover:bg-cyan-500/20">
-                          Tablero 3D
-                        </Button>
-                      </div>
+                      <Button variant="outline" onClick={() => router.push('/daily-mapping')} className="border-cyan-500/30 text-cyan-200 hover:bg-cyan-500/20">
+                        Hacer registro rápido de hoy
+                      </Button>
                     </div>
                   </div>
                 </div>
