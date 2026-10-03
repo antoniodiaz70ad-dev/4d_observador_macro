@@ -59,8 +59,8 @@ export default function Tablero3DPage() {
               <div className="absolute h-4 w-4 rounded-full bg-cyan-100 shadow-[0_0_22px_rgba(103,232,249,0.9)]" />
             </div>
             <div>
-              <p className="text-lg font-semibold tracking-[0.16em] text-white">OBSERVADOR 4D</p>
-              <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.32em] text-cyan-200/70">Ver más. Vivir mejor.</p>
+              <p className="whitespace-nowrap text-[16px] font-semibold tracking-[0.1em] text-white">OBSERVADOR 4D</p>
+              <p className="mt-2 text-[9px] font-medium uppercase tracking-[0.28em] text-cyan-200/70">Ver más. Vivir mejor.</p>
             </div>
           </button>
 
