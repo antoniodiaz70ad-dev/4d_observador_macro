@@ -98,9 +98,9 @@ const EMPTY_BREAKDOWN: NonNullable<APIResponse['stats']['breakdown']> = { projec
 const EMPTY_STATS: APIResponse['stats'] = { total: 1, avgEnergy: 0, connections: 0, breakdown: EMPTY_BREAKDOWN, signals: { projects: 0, relationships: 0, dailyEntries: 0, sufficient: false } };
 
 const VISUAL_REFERENCE_NODES: NodeData[] = [
-  { id: 'observer', x: -14, y: 0, z: 22, size: 6.6, energy: 0.9, coherence: 0.9, label: 'Tú / Observador', color: '#67e8f9', type: 'self', metadata: { source: 'Escenario visual de prueba', empty: true } },
-  { id: 'project_levi', x: 16, y: -9, z: 31, size: 5.1, energy: 0.5, coherence: 0.7, label: 'levi / Proyecto', color: '#8b5cf6', type: 'project', metadata: { description: 'chasis', progress: 0, energyInvested: 5, impactLevel: 7, source: 'Escenario visual de prueba' } },
-  { id: 'relationship_diego', x: 8, y: 16, z: 17, size: 4.0, energy: 0.65, coherence: 0.65, label: 'diego / Relación', color: '#6ee7b7', type: 'relationship', metadata: { source: 'Escenario visual de prueba' } },
+  { id: 'observer', x: -13, y: 1, z: 19, size: 4.9, energy: 0.9, coherence: 0.9, label: 'Tú / Observador', color: '#67e8f9', type: 'self', metadata: { source: 'Escenario visual de prueba', empty: true } },
+  { id: 'project_levi', x: 13, y: -10, z: 27, size: 4.4, energy: 0.5, coherence: 0.7, label: 'levi / Proyecto', color: '#8b5cf6', type: 'project', metadata: { description: 'chasis', progress: 0, energyInvested: 5, impactLevel: 7, source: 'Escenario visual de prueba' } },
+  { id: 'relationship_diego', x: 7, y: 15, z: 14, size: 3.5, energy: 0.65, coherence: 0.65, label: 'diego / Relación', color: '#6ee7b7', type: 'relationship', metadata: { source: 'Escenario visual de prueba' } },
 ];
 
 const VISUAL_REFERENCE_LINKS: LinkData[] = [
@@ -367,6 +367,7 @@ function Scene3D() {
         setBreakdown(VISUAL_REFERENCE_STATS.breakdown ?? EMPTY_BREAKDOWN);
         setSystemCoherence(0.78);
         setUsingRealData(false);
+        setSelectedNode(VISUAL_REFERENCE_NODES[1]);
         return;
       }
 
