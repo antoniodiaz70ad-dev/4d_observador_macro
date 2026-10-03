@@ -93,7 +93,7 @@ export function CoherenceMeters() {
     return 'Necesita atención';
   };
 
-  const hasRealMetrics = coherence.source !== 'empty' && (
+  const hasRealMetrics = !['empty', 'insufficient_signals'].includes(coherence.source || '') && (
     coherence.overallCoherence > 0 ||
     coherence.emotionalCoherence > 0 ||
     coherence.logicalCoherence > 0 ||
@@ -158,7 +158,7 @@ export function CoherenceMeters() {
           <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-5 text-center">
             <p className="text-sm font-semibold text-purple-200">Aún no hay coherencia calculada con tus registros</p>
             <p className="mt-2 text-sm leading-relaxed text-slate-400">
-              Estos indicadores se vuelven útiles cuando registras entradas diarias o ajustas manualmente tu estado. Por ahora no se muestran porcentajes demostrativos.
+              Estos indicadores se vuelven útiles cuando hay proyecto, relación y registro diario. Por ahora no se muestran porcentajes de respaldo ni métricas históricas sin contexto suficiente.
             </p>
             <Button
               onClick={() => setIsEditing(true)}

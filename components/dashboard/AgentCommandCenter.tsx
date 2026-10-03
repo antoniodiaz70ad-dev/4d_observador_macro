@@ -208,21 +208,7 @@ export function AgentCommandCenter() {
     );
   }
 
-  if (error) {
-    return (
-      <Card className="bg-slate-900/80 border-red-500/30">
-        <CardContent className="p-8 text-center">
-          <AlertTriangle className="h-10 w-10 mx-auto text-red-400" />
-          <p className="mt-4 text-red-400">{error}</p>
-          <Button onClick={fetchData} className="mt-4" variant="outline">
-            Reintentar
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!data || data.projects.length === 0) {
+  if (error || !data || data.projects.length === 0) {
     return (
       <Card className="bg-gradient-to-br from-slate-900/90 to-cyan-900/20 border-cyan-500/30 backdrop-blur-sm">
         <CardHeader>
@@ -233,11 +219,20 @@ export function AgentCommandCenter() {
         </CardHeader>
         <CardContent className="p-8 text-center">
           <Radio className="h-12 w-12 mx-auto text-slate-500 mb-4" />
-          <p className="text-slate-400 mb-2">No hay proyectos con agentes configurados</p>
+          <p className="text-slate-400 mb-2">Sin proyectos externos conectados</p>
           <p className="text-sm text-slate-500">
-            Los proyectos con IA (Legal Shield, Capital Miner, etc.) aparecerán aquí
-            cuando comiencen a enviar datos.
+            Cuando conectes Projects Hub, aquí aparecerán balance, decisiones y estado de agentes.
+            {error ? ` Estado del servicio: ${error}.` : ''}
           </p>
+          <div className="mt-5 flex justify-center gap-3">
+            <Button onClick={fetchData} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reintentar
+            </Button>
+            <Button onClick={() => window.location.href = '/projects-hub'} size="sm" className="bg-cyan-600 hover:bg-cyan-700">
+              Abrir Projects Hub
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

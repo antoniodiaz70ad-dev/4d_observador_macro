@@ -80,21 +80,9 @@ export async function GET(request: NextRequest) {
       label: getCategoryLabel(category)
     }));
 
-    // Agregar categorías base si no existen
-    const baseCategories = ['trabajo', 'salud', 'creatividad', 'espiritualidad', 'personal', 'profesional'];
-    baseCategories.forEach(cat => {
-      if (!normalizedFlows.find(flow => flow.category === cat)) {
-        normalizedFlows.push({
-          category: cat,
-          value: Math.floor(Math.random() * 20) + 5,
-          label: getCategoryLabel(cat)
-        });
-      }
-    });
-
-    // Rebalancear para que sume 100%
+    // No agregamos categorías demostrativas: si no hay proyectos o relaciones, no hay fuente para calcular porcentajes.
     const currentTotal = normalizedFlows.reduce((sum, flow) => sum + flow.value, 0);
-    if (currentTotal !== 100) {
+    if (currentTotal !== 100 && currentTotal > 0) {
       const factor = 100 / currentTotal;
       normalizedFlows.forEach(flow => {
         flow.value = Math.round(flow.value * factor);
@@ -132,10 +120,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       flows: normalizedFlows.sort((a, b) => b.value - a.value),
       detailed: detailedFlows,
+      source: normalizedFlows.length > 0 ? 'user_projects_relationships' : 'insufficient_signals',
+      signalCounts: { projects: projects.length, relationships: relationships.length },
       summary: {
         totalActive: normalizedFlows.length,
         highestFlow: normalizedFlows[0]?.category || 'ninguno',
-        energyBalance: calculateEnergyBalance(detailedFlows)
+        energyBalance: normalizedFlows.length > 0 ? calculateEnergyBalance(detailedFlows) : 'sin datos'
       }
     });
   } catch (error) {

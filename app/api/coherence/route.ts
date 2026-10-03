@@ -15,13 +15,19 @@ export async function GET(request: NextRequest) {
 
     const userId = session.user.id;
 
-    // Obtener las métricas más recientes
-    const latestMetrics = await prisma.userMetrics.findFirst({
-      where: { userId },
-      orderBy: { date: 'desc' }
-    });
+    const [projectCount, relationshipCount, entryCount, latestMetrics] = await Promise.all([
+      prisma.project.count({ where: { userId } }),
+      prisma.relationship.count({ where: { userId } }),
+      prisma.dailyEntry.count({ where: { userId } }),
+      prisma.userMetrics.findFirst({
+        where: { userId },
+        orderBy: { date: 'desc' }
+      })
+    ]);
 
-    if (!latestMetrics) {
+    const hasMinimumSignals = projectCount > 0 && relationshipCount > 0 && entryCount > 0;
+
+    if (!latestMetrics || !hasMinimumSignals) {
       return NextResponse.json({
         overallCoherence: 0,
         emotionalCoherence: 0,
@@ -33,12 +39,17 @@ export async function GET(request: NextRequest) {
         projectCompletion: 0,
         relationshipHealth: 0,
         weeklyTrend: 'empty',
-        source: 'empty',
-        message: 'Sin métricas registradas todavía'
+        source: 'insufficient_signals',
+        signalCounts: { projects: projectCount, relationships: relationshipCount, entries: entryCount },
+        message: 'Sin datos suficientes para calcular coherencia'
       });
     }
 
-    return NextResponse.json({ ...latestMetrics, source: 'user_metrics' });
+    return NextResponse.json({
+      ...latestMetrics,
+      source: 'user_metrics',
+      signalCounts: { projects: projectCount, relationships: relationshipCount, entries: entryCount }
+    });
   } catch (error) {
     console.error('Error obteniendo métricas de coherencia:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

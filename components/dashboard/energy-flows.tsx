@@ -36,6 +36,8 @@ interface EnergyFlow {
 
 interface EnergyData {
   flows: EnergyFlow[];
+  source?: string;
+  signalCounts?: { projects: number; relationships: number };
   detailed: {
     inputs: Array<{
       source: string;
@@ -143,6 +145,8 @@ export function EnergyFlows() {
     fill: ENERGY_COLORS[index % ENERGY_COLORS.length]
   }));
 
+  const hasEnergySignals = energyData.source !== 'insufficient_signals' && energyData.flows.length > 0;
+
   const barData = energyData.flows.slice(0, 6).map((flow, index) => ({
     category: flow.label.replace(/[^\w\s]/gi, ''),
     input: energyData.detailed.inputs
@@ -166,6 +170,29 @@ export function EnergyFlows() {
           <div className="text-center py-8">
             <div className="animate-pulse text-slate-400">Analizando flujos energéticos...</div>
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasEnergySignals) {
+    return (
+      <Card className="bg-gradient-to-br from-slate-900/90 to-yellow-900/30 border-yellow-500/30 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent flex items-center gap-3">
+            <Zap className="h-8 w-8 text-yellow-400" />
+            Flujos de Energía
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-8 text-center">
+          <Zap className="h-12 w-12 mx-auto text-slate-500 mb-4" />
+          <p className="font-semibold text-slate-200">Sin datos suficientes para calcular flujos</p>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
+            Los porcentajes aparecerán cuando existan proyectos activos o relaciones registradas. No se muestran áreas ni balances de ejemplo.
+          </p>
+          <p className="mt-3 text-xs text-slate-600">
+            Fuente actual: {energyData.signalCounts?.projects || 0} proyectos · {energyData.signalCounts?.relationships || 0} relaciones
+          </p>
         </CardContent>
       </Card>
     );
