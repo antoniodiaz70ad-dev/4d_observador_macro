@@ -192,7 +192,10 @@ export class Node3D {
       eyeContext.shadowColor = 'rgba(103, 232, 249, 0.75)';
       eyeContext.shadowBlur = 28;
       eyeContext.beginPath();
-      eyeContext.ellipse(256, 128, 152, 62, 0, 0, Math.PI * 2);
+      eyeContext.moveTo(82, 128);
+      eyeContext.bezierCurveTo(126, 58, 386, 58, 430, 128);
+      eyeContext.bezierCurveTo(386, 198, 126, 198, 82, 128);
+      eyeContext.closePath();
       eyeContext.stroke();
       eyeContext.fillStyle = 'rgba(191, 249, 255, 0.95)';
       eyeContext.beginPath();
