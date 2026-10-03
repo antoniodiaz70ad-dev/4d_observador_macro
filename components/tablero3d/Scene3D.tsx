@@ -54,14 +54,20 @@ interface APIResponse {
       logical: number;
       energetic: number;
     };
+    signals?: {
+      projects: number;
+      relationships: number;
+      dailyEntries: number;
+      sufficient: boolean;
+    };
   };
 }
 
 const NODE_TYPES = [
   { id: 'all', label: 'Todos', icon: Layers, color: '#ffffff' },
-  { id: 'self', label: 'Observador', icon: Target, color: '#00ffff' },
-  { id: 'project', label: 'Proyectos', icon: Briefcase, color: '#ff00ff' },
-  { id: 'relationship', label: 'Relaciones', icon: Users, color: '#ffaa00' },
+  { id: 'self', label: 'Observador', icon: Target, color: '#67e8f9' },
+  { id: 'project', label: 'Proyectos', icon: Briefcase, color: '#8b5cf6' },
+  { id: 'relationship', label: 'Relaciones', icon: Users, color: '#6ee7b7' },
   { id: 'intention', label: 'Intenciones', icon: Lightbulb, color: '#00ff88' },
   { id: 'manifestation', label: 'Manifestaciones', icon: Sparkles, color: '#ff0088' },
 ];
