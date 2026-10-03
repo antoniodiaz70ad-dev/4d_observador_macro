@@ -136,6 +136,7 @@ function Scene3D() {
   const [usingRealData, setUsingRealData] = useState(false);
   const [breakdown, setBreakdown] = useState<Record<string, number>>({});
   const [timelineSnapshots, setTimelineSnapshots] = useState<Array<{ id: string; nodeLabel: string; createdAt: string }>>([]);
+  const [selectedSnapshotIds, setSelectedSnapshotIds] = useState<string[]>([]);
   
   // Modo de visualización: coherencia (nodos normales) o economía (sistema solar)
   const [viewMode, setViewMode] = useState<ViewMode>('coherence');
@@ -246,7 +247,7 @@ function Scene3D() {
     if (!rawDate || typeof rawDate !== 'string') return null;
     const date = new Date(rawDate);
     if (Number.isNaN(date.getTime())) return null;
-    return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    return `${date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })} · ${date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`;
   }, [selectedNode]);
 
 
@@ -262,9 +263,25 @@ function Scene3D() {
   const formatSnapshotDate = useCallback((value: string) => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'Sin fecha';
-    return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    return `${date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })} · ${date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`;
   }, []);
 
+
+  const toggleSnapshotSelection = useCallback((snapshotId: string) => {
+    setSelectedSnapshotIds((current) => {
+      if (current.includes(snapshotId)) {
+        return current.filter((id) => id !== snapshotId);
+      }
+      return [...current.slice(-1), snapshotId];
+    });
+  }, []);
+
+  const canCompareSnapshots = selectedSnapshotIds.length === 2;
+  const timelineHelpText = timelineSnapshots.length < 2
+    ? 'Necesitas al menos dos capturas reales para comparar.'
+    : canCompareSnapshots
+      ? 'Listo para comparar las dos capturas seleccionadas.'
+      : 'Selecciona dos capturas en la línea temporal.';
 
   const selectedSourceEnergy = selectedNode ? Math.round((selectedNode.energy || 0) * 100) : 0;
   const selectedSourceCoherence = useMemo(() => {
@@ -277,22 +294,22 @@ function Scene3D() {
 
   // Calcular centro de los nodos para centrar la cámara
   const calculateCenter = useCallback((nodes: NodeData[]) => {
-    if (nodes.length === 0) return new BABYLON.Vector3(0, 20, 0);
+    if (nodes.length === 0) return new BABYLON.Vector3(0, 18, 0);
     const sumX = nodes.reduce((acc, n) => acc + n.x, 0) / nodes.length;
     const sumY = nodes.reduce((acc, n) => acc + n.y, 0) / nodes.length;
     const sumZ = nodes.reduce((acc, n) => acc + n.z, 0) / nodes.length;
-    return new BABYLON.Vector3(sumX, sumZ / 2, sumY);
-  }, []);
+    return new BABYLON.Vector3(sumX, projectionMode === '2d' ? 0 : sumZ, sumY);
+  }, [projectionMode]);
 
 
   const calculateRadius = useCallback((nodes: NodeData[]) => {
-    if (nodes.length <= 1) return 55;
+    if (nodes.length <= 1) return projectionMode === '2d' ? 72 : 88;
     const center = calculateCenter(nodes);
     const farthest = nodes.reduce((maxDistance, node) => {
       const position = new BABYLON.Vector3(node.x, projectionMode === '2d' ? 0 : node.z, node.y);
       return Math.max(maxDistance, BABYLON.Vector3.Distance(center, position));
     }, 0);
-    return Math.max(45, Math.min(170, farthest * 2.2 + 35));
+    return Math.max(projectionMode === '2d' ? 72 : 88, Math.min(190, farthest * 2.5 + 46));
   }, [calculateCenter, projectionMode]);
 
   const frameNodes = useCallback((nodes: NodeData[] = visibleNodes.length > 0 ? visibleNodes : nodesData) => {
@@ -300,7 +317,7 @@ function Scene3D() {
     if (!camera || nodes.length === 0) return;
 
     camera.alpha = Math.PI / 4;
-    camera.beta = projectionMode === '2d' ? 0.35 : Math.PI / 3;
+    camera.beta = projectionMode === '2d' ? 0.28 : Math.PI / 3.05;
     camera.radius = calculateRadius(nodes);
     camera.target = calculateCenter(nodes);
   }, [calculateCenter, calculateRadius, nodesData, projectionMode, visibleNodes]);
@@ -312,8 +329,8 @@ function Scene3D() {
 
     const yPosition = projectionMode === '2d' ? 0 : node.z;
     camera.alpha = Math.PI / 4;
-    camera.beta = projectionMode === '2d' ? 0.35 : Math.PI / 3;
-    camera.radius = Math.max(35, Math.min(85, 42 + nodesData.length * 3));
+    camera.beta = projectionMode === '2d' ? 0.28 : Math.PI / 3.05;
+    camera.radius = Math.max(projectionMode === '2d' ? 64 : 58, Math.min(100, 54 + nodesData.length * 4));
     camera.target = new BABYLON.Vector3(node.x, yPosition, node.y);
   }, [nodesData.length, projectionMode]);
 
@@ -442,7 +459,7 @@ function Scene3D() {
           break;
         case 'reset':
           camera.alpha = Math.PI / 4;
-          camera.beta = projectionMode === '2d' ? 0.35 : Math.PI / 3;
+          camera.beta = projectionMode === '2d' ? 0.28 : Math.PI / 3.05;
           frameNodes();
           break;
       }
@@ -490,8 +507,8 @@ function Scene3D() {
     const camera = new BABYLON.ArcRotateCamera(
       'camera',
       Math.PI / 4,
-      Math.PI / 3,
-      150,
+      Math.PI / 3.05,
+      170,
       new BABYLON.Vector3(0, 20, 0),
       scene
     );
@@ -499,7 +516,7 @@ function Scene3D() {
     camera.upperRadiusLimit = 250;
     camera.lowerBetaLimit = 0.2;
     camera.upperBetaLimit = Math.PI / 2.2;
-    camera.fov = 0.6;
+    camera.fov = 0.52;
     camera.attachControl(canvasRef.current, true);
     camera.wheelPrecision = 15;
     camera.panningSensibility = 30;
@@ -581,7 +598,7 @@ function Scene3D() {
     const center = calculateCenter(nodes);
     camera.target = center;
     camera.radius = calculateRadius(nodes);
-    camera.beta = projectionMode === '2d' ? 0.35 : Math.PI / 3;
+    camera.beta = projectionMode === '2d' ? 0.28 : Math.PI / 3.05;
 
     // Crear sistema de partículas
     Particles3D.create(scene);
@@ -773,7 +790,7 @@ function Scene3D() {
       )}
 
       {/* Controles inferiores y memoria del mapa */}
-      <div className="pointer-events-none absolute bottom-8 left-8 right-[430px] z-50 space-y-5">
+      <div className="pointer-events-none absolute bottom-8 left-8 right-[390px] z-50 space-y-5">
         <div className="pointer-events-auto flex flex-wrap items-center gap-4">
           <button
             onClick={() => frameNodes()}
@@ -831,39 +848,57 @@ function Scene3D() {
         )}
 
         <Card className="pointer-events-auto border-blue-200/20 bg-slate-950/55 p-5 shadow-2xl shadow-blue-950/30 backdrop-blur-xl">
-          <div className="flex items-center gap-5">
+          <div className="grid grid-cols-[auto_260px_minmax(260px,1fr)_auto] items-center gap-5">
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/20 bg-blue-400/10">
               <Layers className="h-7 w-7 text-blue-100" />
             </div>
-            <div className="w-72">
+            <div>
               <p className="text-lg font-semibold text-white">Memoria del mapa</p>
-              <p className="text-sm text-blue-200/70">{timelineSnapshots.length > 1 ? 'Selecciona dos capturas para comparar' : 'Las capturas aparecerán cuando cambie tu mapa'}</p>
+              <p className="text-sm text-blue-200/70">{timelineHelpText}</p>
             </div>
-            <div className="hidden flex-1 items-center gap-4 lg:flex">
-              {(timelineSnapshots.length > 0 ? timelineSnapshots : [{ id: 'empty', nodeLabel: 'Sin capturas', createdAt: new Date().toISOString() }]).map((snapshot, index, list) => (
-                <div key={snapshot.id} className="flex flex-1 items-center gap-4">
-                  <div className={`h-3 w-3 rounded-full border ${index === list.length - 1 && timelineSnapshots.length > 0 ? 'border-violet-300 bg-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.9)]' : 'border-blue-200/70 bg-slate-950'}`} />
-                  {index < list.length - 1 && <div className="h-px flex-1 bg-blue-200/25" />}
-                  <span className="absolute mt-12 max-w-24 -translate-x-8 truncate text-xs text-blue-200/65">
-                    {timelineSnapshots.length > 0 ? formatSnapshotDate(snapshot.createdAt) : 'Sin capturas'}
-                  </span>
+            <div className="hidden min-w-0 items-center gap-0 lg:flex">
+              {timelineSnapshots.length === 0 ? (
+                <div className="flex w-full items-center justify-center rounded-2xl border border-blue-200/15 bg-slate-950/35 px-4 py-3 text-sm text-blue-200/60">
+                  Sin capturas reales todavía
                 </div>
-              ))}
+              ) : (
+                timelineSnapshots.map((snapshot, index) => {
+                  const selected = selectedSnapshotIds.includes(snapshot.id);
+                  const latest = index === timelineSnapshots.length - 1;
+                  return (
+                    <div key={snapshot.id} className="flex min-w-0 flex-1 items-center">
+                      <button
+                        onClick={() => toggleSnapshotSelection(snapshot.id)}
+                        className="group flex min-w-0 flex-1 flex-col items-center gap-2 rounded-2xl px-2 py-1.5 transition hover:bg-cyan-400/10"
+                        title={`Captura ${formatSnapshotDate(snapshot.createdAt)}`}
+                      >
+                        <span className={`h-4 w-4 rounded-full border transition ${selected ? 'border-cyan-200 bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)]' : latest ? 'border-violet-300 bg-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.9)]' : 'border-blue-200/70 bg-slate-950'}`} />
+                        <span className={`max-w-[9rem] truncate text-center text-[11px] leading-tight ${selected ? 'text-cyan-100' : 'text-blue-200/65'}`}>
+                          {formatSnapshotDate(snapshot.createdAt)}
+                        </span>
+                      </button>
+                      {index < timelineSnapshots.length - 1 && <div className="h-px w-8 shrink-0 bg-blue-200/25" />}
+                    </div>
+                  );
+                })
+              )}
             </div>
-            <button disabled={timelineSnapshots.length < 2} title={timelineSnapshots.length < 2 ? 'Necesitas al menos dos capturas reales para reproducir la evolución.' : 'Reproducir evolución'} className="ml-auto flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/30 bg-slate-950/50 text-blue-100 hover:bg-blue-400/10 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-slate-950/50" aria-label="Reproducir evolución">
-              <Play className="h-5 w-5 fill-current" />
-            </button>
-            <button disabled={timelineSnapshots.length < 2} title={timelineSnapshots.length < 2 ? 'Necesitas al menos dos capturas reales para comparar.' : 'Comparar capturas'} className="flex h-14 items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-violet-500 px-6 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 disabled:cursor-not-allowed disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:shadow-none">
-              <BarChart3 className="h-5 w-5" />
-              {timelineSnapshots.length < 2 ? 'Sin comparación' : 'Comparar capturas'}
-            </button>
+            <div className="flex items-center gap-3">
+              <button disabled={timelineSnapshots.length < 2} title={timelineSnapshots.length < 2 ? 'Necesitas al menos dos capturas reales para reproducir la evolución.' : 'Reproducir evolución'} className="flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/30 bg-slate-950/50 text-blue-100 hover:bg-blue-400/10 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-slate-950/50" aria-label="Reproducir evolución">
+                <Play className="h-5 w-5 fill-current" />
+              </button>
+              <button disabled={!canCompareSnapshots} title={timelineHelpText} className="flex h-14 items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-violet-500 px-6 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 disabled:cursor-not-allowed disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:shadow-none">
+                <BarChart3 className="h-5 w-5" />
+                {canCompareSnapshots ? 'Comparar capturas' : 'Selecciona 2'}
+              </button>
+            </div>
           </div>
         </Card>
       </div>
 
       {/* Panel de información del nodo seleccionado - MOTOR DE SIGNIFICADO */}
       {selectedNode && (
-        <div className="absolute right-20 top-36 z-40 w-[360px] max-h-[calc(100vh-11rem)] animate-in slide-in-from-right overflow-y-auto pr-1">
+        <div className="absolute right-8 top-36 z-40 w-[380px] max-h-[calc(100vh-10rem)] animate-in slide-in-from-right overflow-y-auto pr-1">
           <Card className="border-blue-200/20 bg-slate-950/70 p-6 shadow-2xl shadow-blue-950/40 backdrop-blur-2xl">
             {/* Header con estado */}
             <div className="flex items-start justify-between mb-4">
