@@ -94,7 +94,8 @@ const EMPTY_NODES: NodeData[] = [
   { id: 'observer', x: 0, y: 0, z: 45, size: 3.5, energy: 0, label: 'Observador 4D', color: '#00ffff', type: 'self', metadata: { empty: true, coherence: 0 } },
 ];
 
-const EMPTY_STATS: APIResponse['stats'] = { total: 1, avgEnergy: 0, connections: 0, breakdown: { projects: 0, relationships: 0, intentions: 0, manifestations: 0 }, signals: { projects: 0, relationships: 0, dailyEntries: 0, sufficient: false } };
+const EMPTY_BREAKDOWN: Record<string, number> = { projects: 0, relationships: 0, intentions: 0, manifestations: 0 };
+const EMPTY_STATS: APIResponse['stats'] = { total: 1, avgEnergy: 0, connections: 0, breakdown: EMPTY_BREAKDOWN, signals: { projects: 0, relationships: 0, dailyEntries: 0, sufficient: false } };
 
 const EXAMPLE_LINKS: LinkData[] = [
   { source: 'observer', target: 'work', strength: 0.9 },
@@ -329,7 +330,7 @@ function Scene3D() {
           setNodesData(EMPTY_NODES);
           setLinksData([]);
           setStats(EMPTY_STATS);
-          setBreakdown(EMPTY_STATS.breakdown);
+          setBreakdown(EMPTY_BREAKDOWN);
           setSystemCoherence(0);
           setUsingRealData(false);
           return;
@@ -345,7 +346,7 @@ function Scene3D() {
         setStats(data.stats);
         setUsingRealData(true);
         if (data.stats.breakdown) {
-          setBreakdown(data.stats.breakdown);
+          setBreakdown(data.stats.breakdown ?? EMPTY_BREAKDOWN);
         }
         if (data.stats.coherence?.overall) {
           setSystemCoherence(data.stats.coherence.overall / 100);
@@ -354,7 +355,7 @@ function Scene3D() {
         setNodesData(EMPTY_NODES);
         setLinksData([]);
         setStats(EMPTY_STATS);
-        setBreakdown(EMPTY_STATS.breakdown);
+        setBreakdown(EMPTY_BREAKDOWN);
         setSystemCoherence(0);
         setUsingRealData(false);
       }
@@ -363,7 +364,7 @@ function Scene3D() {
       setNodesData(EMPTY_NODES);
       setLinksData([]);
       setStats(EMPTY_STATS);
-      setBreakdown(EMPTY_STATS.breakdown);
+      setBreakdown(EMPTY_BREAKDOWN);
       setSystemCoherence(0);
       setUsingRealData(false);
       setError('No se pudieron cargar datos reales');
