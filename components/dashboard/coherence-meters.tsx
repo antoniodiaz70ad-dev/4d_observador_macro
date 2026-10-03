@@ -169,6 +169,8 @@ export function CoherenceMeters() {
           </div>
         )}
 
+        {(hasRealMetrics || isEditing) && (
+          <>
         {/* Coherencia General */}
         <div className="text-center">
           <div className="text-6xl font-bold mb-2" style={{ color: getCoherenceColor(coherence.overallCoherence) }}>
@@ -281,6 +283,8 @@ export function CoherenceMeters() {
             )}
           </div>
         </div>
+          </>
+        )}
 
         {/* Botones de Acción */}
         {isEditing && (
