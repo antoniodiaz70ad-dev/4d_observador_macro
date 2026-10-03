@@ -40,10 +40,10 @@ export class Node3D {
     if (isProject) {
       sphere = BABYLON.MeshBuilder.CreateBox(
         nodeData.id,
-        { size: nodeData.size * 0.95 },
+        { size: nodeData.size * 0.9 },
         scene
       );
-      sphere.rotation = new BABYLON.Vector3(Math.PI / 10, Math.PI / 4, -Math.PI / 18);
+      sphere.rotation = new BABYLON.Vector3(Math.PI / 12, -Math.PI / 4.5, -Math.PI / 24);
     } else {
       sphere = BABYLON.MeshBuilder.CreateSphere(
         nodeData.id,
@@ -73,7 +73,7 @@ export class Node3D {
     material.emissiveColor = finalColor.scale(isProject ? 0.9 : 0.5);
     material.specularColor = new BABYLON.Color3(1, 1, 1);
     material.specularPower = isProject ? 96 : 64;
-    material.alpha = isProject ? 0.88 : 0.82;
+    material.alpha = isProject ? 0.82 : 0.82;
     material.backFaceCulling = false;
     sphere.material = material;
 
@@ -101,7 +101,7 @@ export class Node3D {
     const glowMat = new BABYLON.StandardMaterial(`${nodeData.id}_glow_mat`, scene);
     glowMat.diffuseColor = finalColor;
     glowMat.emissiveColor = finalColor;
-    glowMat.alpha = isObserver ? 0.18 : isProject ? 0.045 : 0.16;
+    glowMat.alpha = isObserver ? 0.2 : isProject ? 0.06 : 0.16;
     glowMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
     glowMat.backFaceCulling = false;
     glow.material = glowMat;
@@ -143,7 +143,7 @@ export class Node3D {
       : isRelationship
         ? new BABYLON.Color3(0.72, 1, 0.82)
         : new BABYLON.Color3(0.58, 1, 1);
-    coreMat.alpha = 0.96;
+    coreMat.alpha = isObserver ? 0.0 : 0.96;
     coreMat.specularPower = 96;
     core.material = coreMat;
     core.isPickable = false;
@@ -180,6 +180,7 @@ export class Node3D {
       const pupilMat = new BABYLON.StandardMaterial(`${nodeData.id}_pupil_mat`, scene);
       pupilMat.emissiveColor = new BABYLON.Color3(0.85, 1, 1);
       pupilMat.diffuseColor = new BABYLON.Color3(0.75, 1, 1);
+      pupilMat.alpha = 0.0;
       pupil.material = pupilMat;
       pupil.isPickable = false;
 
@@ -187,23 +188,34 @@ export class Node3D {
       eyeTexture.hasAlpha = true;
       const eyeContext = eyeTexture.getContext() as unknown as CanvasRenderingContext2D;
       eyeContext.clearRect(0, 0, 512, 256);
-      eyeContext.lineWidth = 20;
-      eyeContext.strokeStyle = 'rgba(103, 232, 249, 0.98)';
-      eyeContext.shadowColor = 'rgba(103, 232, 249, 0.75)';
-      eyeContext.shadowBlur = 28;
+      eyeContext.shadowColor = 'rgba(103, 232, 249, 0.72)';
+      eyeContext.shadowBlur = 26;
+      eyeContext.fillStyle = 'rgba(12, 224, 240, 0.12)';
+      eyeContext.strokeStyle = 'rgba(136, 246, 255, 0.98)';
+      eyeContext.lineWidth = 18;
       eyeContext.beginPath();
-      eyeContext.moveTo(82, 128);
-      eyeContext.bezierCurveTo(126, 58, 386, 58, 430, 128);
-      eyeContext.bezierCurveTo(386, 198, 126, 198, 82, 128);
+      eyeContext.moveTo(74, 128);
+      eyeContext.bezierCurveTo(132, 48, 380, 48, 438, 128);
+      eyeContext.bezierCurveTo(380, 208, 132, 208, 74, 128);
       eyeContext.closePath();
+      eyeContext.fill();
       eyeContext.stroke();
-      eyeContext.fillStyle = 'rgba(191, 249, 255, 0.95)';
+      eyeContext.shadowBlur = 18;
+      eyeContext.fillStyle = 'rgba(125, 249, 255, 0.96)';
       eyeContext.beginPath();
-      eyeContext.arc(256, 128, 38, 0, Math.PI * 2);
+      eyeContext.arc(256, 128, 47, 0, Math.PI * 2);
+      eyeContext.fill();
+      eyeContext.fillStyle = 'rgba(7, 26, 45, 0.92)';
+      eyeContext.beginPath();
+      eyeContext.arc(256, 128, 21, 0, Math.PI * 2);
+      eyeContext.fill();
+      eyeContext.fillStyle = 'rgba(235, 255, 255, 0.9)';
+      eyeContext.beginPath();
+      eyeContext.arc(242, 113, 8, 0, Math.PI * 2);
       eyeContext.fill();
       eyeTexture.update();
 
-      const eyePlane = BABYLON.MeshBuilder.CreatePlane(`${nodeData.id}_eye_plane`, { width: nodeData.size * 1.26, height: nodeData.size * 0.62 }, scene);
+      const eyePlane = BABYLON.MeshBuilder.CreatePlane(`${nodeData.id}_eye_plane`, { width: nodeData.size * 1.45, height: nodeData.size * 0.72 }, scene);
       eyePlane.position = sphere.position.clone().add(new BABYLON.Vector3(0, nodeData.size * 0.02, 0));
       eyePlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
       eyePlane.renderingGroupId = 2;
