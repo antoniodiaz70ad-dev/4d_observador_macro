@@ -72,14 +72,14 @@ export class Node3D {
     material.diffuseColor = isProject
       ? new BABYLON.Color3(0.42, 0.22, 0.95)
       : isObserver
-        ? new BABYLON.Color3(0.04, 0.72, 1)
+        ? new BABYLON.Color3(1.0, 0.68, 0.08)
         : finalColor;
     material.emissiveColor = isObserver
-      ? new BABYLON.Color3(0.02, 0.58, 0.9)
+      ? new BABYLON.Color3(0.95, 0.46, 0.02)
       : finalColor.scale(isProject ? 0.36 : 0.42);
     material.specularColor = isProject
       ? new BABYLON.Color3(0.42, 0.34, 0.72)
-      : new BABYLON.Color3(0.42, 0.92, 1);
+      : new BABYLON.Color3(1, 0.9, 0.35);
     material.specularPower = isProject ? 28 : 42;
     material.alpha = isProject ? 0.72 : isObserver ? 0.62 : 0.78;
     material.backFaceCulling = false;
@@ -200,10 +200,10 @@ export class Node3D {
       eyeTexture.hasAlpha = true;
       const eyeContext = eyeTexture.getContext() as unknown as CanvasRenderingContext2D;
       eyeContext.clearRect(0, 0, 512, 256);
-      eyeContext.shadowColor = 'rgba(56, 189, 248, 1)';
+      eyeContext.shadowColor = 'rgba(251, 191, 36, 1)';
       eyeContext.shadowBlur = 36;
-      eyeContext.fillStyle = 'rgba(34, 211, 238, 0.08)';
-      eyeContext.strokeStyle = 'rgba(165, 243, 252, 1)';
+      eyeContext.fillStyle = 'rgba(253, 224, 71, 0.12)';
+      eyeContext.strokeStyle = 'rgba(254, 240, 138, 1)';
       eyeContext.lineWidth = 24;
       eyeContext.beginPath();
       eyeContext.moveTo(52, 128);
@@ -213,15 +213,15 @@ export class Node3D {
       eyeContext.fill();
       eyeContext.stroke();
       eyeContext.shadowBlur = 24;
-      eyeContext.fillStyle = 'rgba(103, 232, 249, 0.96)';
+      eyeContext.fillStyle = 'rgba(250, 204, 21, 0.96)';
       eyeContext.beginPath();
       eyeContext.arc(256, 128, 57, 0, Math.PI * 2);
       eyeContext.fill();
-      eyeContext.fillStyle = 'rgba(7, 26, 45, 0.92)';
+      eyeContext.fillStyle = 'rgba(67, 20, 7, 0.94)';
       eyeContext.beginPath();
       eyeContext.arc(256, 128, 25, 0, Math.PI * 2);
       eyeContext.fill();
-      eyeContext.fillStyle = 'rgba(235, 255, 255, 0.9)';
+      eyeContext.fillStyle = 'rgba(255, 251, 235, 0.95)';
       eyeContext.beginPath();
       eyeContext.arc(238, 110, 10, 0, Math.PI * 2);
       eyeContext.fill();
@@ -235,7 +235,7 @@ export class Node3D {
       const eyePlaneMat = new BABYLON.StandardMaterial(`${nodeData.id}_eye_plane_mat`, scene);
       eyePlaneMat.diffuseTexture = eyeTexture;
       eyePlaneMat.opacityTexture = eyeTexture;
-      eyePlaneMat.emissiveColor = new BABYLON.Color3(0.64, 0.95, 1);
+      eyePlaneMat.emissiveColor = new BABYLON.Color3(1, 0.82, 0.18);
       eyePlaneMat.disableLighting = true;
       eyePlaneMat.backFaceCulling = false;
       eyePlaneMat.disableDepthWrite = true;
@@ -254,8 +254,8 @@ export class Node3D {
       );
       highlight.position = sphere.position.clone().add(new BABYLON.Vector3(-nodeData.size * 0.22, nodeData.size * 0.24, -nodeData.size * 0.42));
       const highlightMat = new BABYLON.StandardMaterial(`${nodeData.id}_highlight_mat`, scene);
-      highlightMat.emissiveColor = new BABYLON.Color3(0.72, 1, 1);
-      highlightMat.diffuseColor = new BABYLON.Color3(0.72, 1, 1);
+      highlightMat.emissiveColor = new BABYLON.Color3(1, 0.86, 0.32);
+      highlightMat.diffuseColor = new BABYLON.Color3(1, 0.86, 0.32);
       highlightMat.alpha = 0.0;
       highlightMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
       highlight.material = highlightMat;
