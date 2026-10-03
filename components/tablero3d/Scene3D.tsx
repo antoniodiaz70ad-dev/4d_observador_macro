@@ -8,11 +8,12 @@ import { Link3D } from './Link3D';
 import { Grid3D } from './Grid3D';
 import { Particles3D } from './Particles3D';
 import { Card } from '@/components/ui/card';
-import { X, Filter, Eye, Layers, Target, Sparkles, Users, Briefcase, Lightbulb, Loader2, RefreshCw, AlertCircle, TrendingUp, TrendingDown, Zap, ArrowRight, Brain, DollarSign, Orbit, Activity } from 'lucide-react';
+import { X, Filter, Eye, Layers, Target, Sparkles, Users, Briefcase, Lightbulb, Loader2, RefreshCw, AlertCircle, TrendingUp, TrendingDown, Zap, ArrowRight, Brain, DollarSign, Orbit, Activity, Search, Maximize2, Network } from 'lucide-react';
 import { interpretNode, NodeInterpretation } from '@/lib/nodeInterpreter';
 
 // Modos de visualización
 type ViewMode = 'coherence' | 'economy';
+type ProjectionMode = '3d' | '2d';
 
 interface NodeData {
   id: string;
@@ -112,10 +113,13 @@ function Scene3D() {
   const sceneRef = useRef<BABYLON.Scene | null>(null);
   const cameraRef = useRef<BABYLON.ArcRotateCamera | null>(null);
   const nodeMeshesRef = useRef<Map<string, BABYLON.Mesh>>(new Map());
+  const linkMeshesRef = useRef<Array<{ mesh: BABYLON.Mesh; source: string; target: string }>>([]);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [debugMode, setDebugMode] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [projectionMode, setProjectionMode] = useState<ProjectionMode>('3d');
   const [nodesData, setNodesData] = useState<NodeData[]>([]);
   const [linksData, setLinksData] = useState<LinkData[]>([]);
   const [stats, setStats] = useState({ total: 0, avgEnergy: 0, connections: 0 });
@@ -192,6 +196,50 @@ function Scene3D() {
     );
   }, [selectedNode, linksData, nodesData, systemCoherence]);
 
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const visibleNodes = useMemo(() => {
+    return nodesData.filter((node) => {
+      const matchesFilter = activeFilter === 'all' || node.type === activeFilter;
+      const matchesSearch = !normalizedSearch || node.label.toLowerCase().includes(normalizedSearch);
+      return matchesFilter && matchesSearch;
+    });
+  }, [nodesData, activeFilter, normalizedSearch]);
+
+  const visibleNodeIds = useMemo(() => new Set(visibleNodes.map((node) => node.id)), [visibleNodes]);
+
+  const searchResults = useMemo(() => {
+    if (!normalizedSearch) return [];
+    return nodesData
+      .filter((node) => node.label.toLowerCase().includes(normalizedSearch))
+      .slice(0, 6);
+  }, [nodesData, normalizedSearch]);
+
+  const selectedConnections = useMemo(() => {
+    if (!selectedNode) return [];
+    return linksData
+      .filter((link) => link.source === selectedNode.id || link.target === selectedNode.id)
+      .map((link) => {
+        const otherId = link.source === selectedNode.id ? link.target : link.source;
+        return {
+          ...link,
+          otherNode: nodesData.find((node) => node.id === otherId),
+        };
+      })
+      .filter((link) => Boolean(link.otherNode));
+  }, [selectedNode, linksData, nodesData]);
+
+  const selectedLastChange = useMemo(() => {
+    const metadata = selectedNode?.metadata;
+    if (!metadata) return null;
+    const rawDate = metadata.updatedAt || metadata.lastUpdated || metadata.createdAt || metadata.date;
+    if (!rawDate || typeof rawDate !== 'string') return null;
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+  }, [selectedNode]);
+
   // Calcular centro de los nodos para centrar la cámara
   const calculateCenter = useCallback((nodes: NodeData[]) => {
     if (nodes.length === 0) return new BABYLON.Vector3(0, 20, 0);
@@ -200,6 +248,39 @@ function Scene3D() {
     const sumZ = nodes.reduce((acc, n) => acc + n.z, 0) / nodes.length;
     return new BABYLON.Vector3(sumX, sumZ / 2, sumY);
   }, []);
+
+
+  const calculateRadius = useCallback((nodes: NodeData[]) => {
+    if (nodes.length <= 1) return 55;
+    const center = calculateCenter(nodes);
+    const farthest = nodes.reduce((maxDistance, node) => {
+      const position = new BABYLON.Vector3(node.x, projectionMode === '2d' ? 0 : node.z, node.y);
+      return Math.max(maxDistance, BABYLON.Vector3.Distance(center, position));
+    }, 0);
+    return Math.max(45, Math.min(170, farthest * 2.2 + 35));
+  }, [calculateCenter, projectionMode]);
+
+  const frameNodes = useCallback((nodes: NodeData[] = visibleNodes.length > 0 ? visibleNodes : nodesData) => {
+    const camera = cameraRef.current;
+    if (!camera || nodes.length === 0) return;
+
+    camera.alpha = Math.PI / 4;
+    camera.beta = projectionMode === '2d' ? 0.35 : Math.PI / 3;
+    camera.radius = calculateRadius(nodes);
+    camera.target = calculateCenter(nodes);
+  }, [calculateCenter, calculateRadius, nodesData, projectionMode, visibleNodes]);
+
+  const focusNode = useCallback((node: NodeData) => {
+    setSelectedNode(node);
+    const camera = cameraRef.current;
+    if (!camera) return;
+
+    const yPosition = projectionMode === '2d' ? 0 : node.z;
+    camera.alpha = Math.PI / 4;
+    camera.beta = projectionMode === '2d' ? 0.35 : Math.PI / 3;
+    camera.radius = Math.max(35, Math.min(85, 42 + nodesData.length * 3));
+    camera.target = new BABYLON.Vector3(node.x, yPosition, node.y);
+  }, [nodesData.length, projectionMode]);
 
   // Cargar datos desde la API
   const loadData = useCallback(async () => {
@@ -304,9 +385,8 @@ function Scene3D() {
           break;
         case 'reset':
           camera.alpha = Math.PI / 4;
-          camera.beta = Math.PI / 3;
-          camera.radius = 150;
-          camera.target = calculateCenter(nodesData);
+          camera.beta = projectionMode === '2d' ? 0.35 : Math.PI / 3;
+          frameNodes();
           break;
       }
     };
@@ -315,17 +395,19 @@ function Scene3D() {
     return () => {
       window.removeEventListener('scene3d-zoom', handleZoomEvent as EventListener);
     };
-  }, [nodesData, calculateCenter]);
+  }, [nodesData, calculateCenter, frameNodes, projectionMode]);
 
-  // Filtrar nodos por visibilidad
+  // Filtrar nodos y vínculos por visibilidad
   useEffect(() => {
     nodeMeshesRef.current.forEach((mesh, nodeId) => {
-      const node = nodesData.find(n => n.id === nodeId);
-      if (node) {
-        mesh.setEnabled(activeFilter === 'all' || node.type === activeFilter);
-      }
+      const isVisible = visibleNodeIds.has(nodeId);
+      mesh.setEnabled(isVisible);
     });
-  }, [activeFilter, nodesData]);
+
+    linkMeshesRef.current.forEach(({ mesh, source, target }) => {
+      mesh.setEnabled(visibleNodeIds.has(source) && visibleNodeIds.has(target));
+    });
+  }, [visibleNodeIds]);
 
   useEffect(() => {
     if (!canvasRef.current || loading || nodesData.length === 0) return;
@@ -396,13 +478,14 @@ function Scene3D() {
     Grid3D.create(scene);
 
     // Usar datos del estado (ya cargados desde API o ejemplo)
-    const heightMultiplier = debugMode ? 1.5 : 1;
+    const heightMultiplier = projectionMode === '2d' ? 0 : (debugMode ? 1.5 : 1);
     const nodes = nodesData.map(node => ({
       ...node,
       z: node.z * heightMultiplier,
     }));
 
     const links = linksData;
+    linkMeshesRef.current = [];
 
     // Crear nodos 3D y guardarlos en el ref
     const nodeMeshes = new Map<string, BABYLON.Mesh>();
@@ -414,7 +497,7 @@ function Scene3D() {
       mesh.actionManager = new BABYLON.ActionManager(scene);
       mesh.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-          setSelectedNode(nodeData);
+          focusNode(nodeData);
         })
       );
 
@@ -432,13 +515,16 @@ function Scene3D() {
       const sourceNode = nodes.find((n) => n.id === linkData.source);
       const targetNode = nodes.find((n) => n.id === linkData.target);
       if (sourceNode && targetNode) {
-        Link3D.create(scene, sourceNode, targetNode, linkData);
+        const linkMesh = Link3D.create(scene, sourceNode, targetNode, linkData);
+        linkMeshesRef.current.push({ mesh: linkMesh, source: linkData.source, target: linkData.target });
       }
     });
 
     // Centrar cámara en el centro de los nodos después de crearlos
-    const center = new BABYLON.Vector3(0, 20, 0);
+    const center = calculateCenter(nodes);
     camera.target = center;
+    camera.radius = calculateRadius(nodes);
+    camera.beta = projectionMode === '2d' ? 0.35 : Math.PI / 3;
 
     // Crear sistema de partículas
     Particles3D.create(scene);
@@ -458,7 +544,7 @@ function Scene3D() {
       window.removeEventListener('resize', handleResize);
       engine.dispose();
     };
-  }, [debugMode, nodesData, linksData, loading]); // Recrear escena cuando cambien los datos
+  }, [debugMode, nodesData, linksData, loading, projectionMode, calculateCenter, calculateRadius, focusNode]); // Recrear escena cuando cambien los datos
 
   // Loading state
   if (loading) {
@@ -593,12 +679,12 @@ function Scene3D() {
           {usingRealData ? (
             <>
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              Datos Reales
+              Datos reales
             </>
           ) : (
             <>
               <AlertCircle className="w-3 h-3" />
-              Datos de Ejemplo
+              Sin datos conectados
             </>
           )}
           <button
@@ -610,7 +696,76 @@ function Scene3D() {
           </button>
         </div>
 
-        {/* Botón de Modo Debug */}
+        {/* Navegación de constelación */}
+        <Card className="bg-black/85 backdrop-blur-md border-cyan-500/30 p-3 w-72 shadow-2xl">
+          <div className="flex items-center gap-2 mb-3">
+            <Search className="h-4 w-4 text-cyan-300" />
+            <p className="text-cyan-300 text-xs font-semibold uppercase tracking-wider">Buscar en el mapa</p>
+          </div>
+          <div className="relative">
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Proyecto, relación o intención"
+              className="w-full rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-2 pr-8 text-sm text-white placeholder:text-slate-500 outline-none focus:border-cyan-400"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2 top-2 text-slate-500 hover:text-white"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="mt-2 max-h-44 overflow-y-auto space-y-1">
+              {searchResults.map((node) => (
+                <button
+                  key={node.id}
+                  onClick={() => focusNode(node)}
+                  className="w-full rounded-md border border-slate-800 bg-slate-900/70 px-3 py-2 text-left hover:border-cyan-500/60 hover:bg-cyan-950/30 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm text-white truncate">{node.label}</span>
+                    <span className="text-[10px] uppercase tracking-wide text-slate-500">
+                      {NODE_TYPES.find(t => t.id === node.type)?.label || node.type}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {normalizedSearch && searchResults.length === 0 && (
+            <p className="mt-2 text-xs text-slate-500">No encontré nodos con ese nombre.</p>
+          )}
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              onClick={() => frameNodes()}
+              className="flex items-center justify-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-medium text-cyan-200 hover:bg-cyan-500/20"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+              Centrar
+            </button>
+            <button
+              onClick={() => setProjectionMode((mode) => mode === '3d' ? '2d' : '3d')}
+              className="flex items-center justify-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-xs font-medium text-purple-200 hover:bg-purple-500/20"
+            >
+              <Network className="h-3.5 w-3.5" />
+              Vista {projectionMode === '3d' ? '2D' : '3D'}
+            </button>
+          </div>
+
+          <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+            Selecciona un nodo para encuadrarlo, ver sus vínculos y decidir el siguiente paso.
+          </p>
+        </Card>
+
+        {/* Botón de profundidad */}
         <button
           onClick={() => setDebugMode(!debugMode)}
           className={`px-5 py-2.5 rounded-lg font-semibold shadow-xl transition-all transform hover:scale-105 text-sm ${
@@ -619,10 +774,10 @@ function Scene3D() {
               : 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white border border-cyan-300/50 hover:from-cyan-600 hover:to-purple-700'
           }`}
         >
-          {debugMode ? '🔴 Desactivar Debug 3D' : '🎯 Activar Modo Debug 3D'}
+          {debugMode ? 'Reducir alturas' : 'Resaltar alturas'}
         </button>
 
-        {/* Botón de Filtros */}
+        {/* Botón de filtros */}
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={`w-full px-5 py-2.5 rounded-lg font-semibold shadow-xl transition-all flex items-center justify-center gap-2 text-sm ${
@@ -632,13 +787,13 @@ function Scene3D() {
           }`}
         >
           <Filter className="h-4 w-4" />
-          Filtrar Nodos
+          Filtrar mapa
         </button>
 
         {/* Panel de Filtros */}
         {showFilters && (
           <Card className="bg-black/90 backdrop-blur-md border-purple-500/50 p-4 shadow-2xl">
-            <p className="text-purple-300 text-xs font-semibold mb-3 uppercase tracking-wider">Tipos de Nodo</p>
+            <p className="text-purple-300 text-xs font-semibold mb-3 uppercase tracking-wider">Tipos de elemento</p>
             <div className="space-y-2">
               {NODE_TYPES.map((type) => {
                 const Icon = type.icon;
@@ -677,7 +832,7 @@ function Scene3D() {
             </div>
             <div>
               <p className="text-2xl font-bold text-purple-400">{stats.connections}</p>
-              <p className="text-xs text-slate-400">Links</p>
+              <p className="text-xs text-slate-400">Vínculos</p>
             </div>
           </div>
           {/* Breakdown por tipo */}
@@ -719,7 +874,7 @@ function Scene3D() {
               🔍 MODO DEBUG ACTIVO
             </p>
             <p className="text-slate-300 text-xs text-center mt-1">
-              Alturas x6 - Perspectiva exagerada
+              Alturas ampliadas para ver diferencias
             </p>
           </div>
         )}
@@ -843,6 +998,56 @@ function Scene3D() {
                 <p className="text-lg font-bold text-white">
                   {nodeInterpretation.metrics.score.toFixed(1)}
                 </p>
+              </div>
+            </div>
+
+            {/* Contexto y vínculos del nodo */}
+            <div className="mb-4 rounded-lg border border-slate-700/70 bg-slate-950/60 p-3">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Contexto</p>
+                  <p className="text-sm text-slate-300">
+                    Último cambio: {selectedLastChange || 'sin fecha registrada'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => focusNode(selectedNode)}
+                  className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 hover:bg-cyan-500/20"
+                >
+                  Enfocar
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Network className="h-3.5 w-3.5 text-cyan-300" />
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Vínculos registrados</p>
+                </div>
+
+                {selectedConnections.length === 0 ? (
+                  <p className="text-xs text-slate-500">Todavía no hay conexiones para este nodo.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {selectedConnections.slice(0, 5).map((connection) => (
+                      <button
+                        key={`${connection.source}-${connection.target}`}
+                        onClick={() => connection.otherNode && focusNode(connection.otherNode)}
+                        className="flex w-full items-center justify-between gap-3 rounded-md bg-slate-900/70 px-3 py-2 text-left hover:bg-cyan-950/30"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm text-white truncate">{connection.otherNode?.label}</p>
+                          <p className="text-[11px] text-slate-500">Vínculo registrado</p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-300">
+                          fuerza {(connection.strength * 100).toFixed(0)}%
+                        </span>
+                      </button>
+                    ))}
+                    {selectedConnections.length > 5 && (
+                      <p className="text-xs text-slate-500">+{selectedConnections.length - 5} vínculos más</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
