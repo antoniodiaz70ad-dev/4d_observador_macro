@@ -185,7 +185,7 @@ export class Node3D {
 
       const eyeTexture = new BABYLON.DynamicTexture(`${nodeData.id}_eye_texture`, { width: 512, height: 256 }, scene, true);
       eyeTexture.hasAlpha = true;
-      const eyeContext = eyeTexture.getContext();
+      const eyeContext = eyeTexture.getContext() as unknown as CanvasRenderingContext2D;
       eyeContext.clearRect(0, 0, 512, 256);
       eyeContext.lineWidth = 20;
       eyeContext.strokeStyle = 'rgba(103, 232, 249, 0.98)';
