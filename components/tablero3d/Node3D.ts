@@ -152,7 +152,7 @@ export class Node3D {
       : isRelationship
         ? new BABYLON.Color3(0.72, 1, 0.82)
         : new BABYLON.Color3(0.58, 1, 1);
-    coreMat.alpha = isObserver ? 0.0 : 0.96;
+    coreMat.alpha = isObserver || isProject ? 0.0 : 0.96;
     coreMat.specularPower = 96;
     core.material = coreMat;
     core.isPickable = false;
@@ -161,6 +161,7 @@ export class Node3D {
     let pupil: BABYLON.Mesh | null = null;
     let relationshipBody: BABYLON.Mesh | null = null;
     let projectOrbit: BABYLON.Mesh | null = null;
+    let iconPlane: BABYLON.Mesh | null = null;
 
     // Ojo 3D del observador: aro elíptico + pupila sobre la esfera turquesa
     if (isObserver) {
@@ -298,6 +299,93 @@ export class Node3D {
       orbitMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
       projectOrbit.material = orbitMat;
       projectOrbit.isPickable = false;
+    }
+
+    if (isProject || isRelationship) {
+      const iconTexture = new BABYLON.DynamicTexture(`${nodeData.id}_icon_texture`, { width: 512, height: 512 }, scene, true);
+      iconTexture.hasAlpha = true;
+      const iconContext = iconTexture.getContext() as unknown as CanvasRenderingContext2D;
+      iconContext.clearRect(0, 0, 512, 512);
+      iconContext.lineCap = 'round';
+      iconContext.lineJoin = 'round';
+      iconContext.shadowBlur = 28;
+
+      if (isProject) {
+        iconContext.shadowColor = 'rgba(196, 181, 253, 0.95)';
+        const gradient = iconContext.createLinearGradient(130, 90, 380, 430);
+        gradient.addColorStop(0, 'rgba(245, 243, 255, 0.95)');
+        gradient.addColorStop(0.45, 'rgba(167, 139, 250, 0.72)');
+        gradient.addColorStop(1, 'rgba(91, 33, 182, 0.78)');
+        iconContext.fillStyle = gradient;
+        iconContext.strokeStyle = 'rgba(221, 214, 254, 0.95)';
+        iconContext.lineWidth = 12;
+        iconContext.beginPath();
+        iconContext.moveTo(172, 132);
+        iconContext.lineTo(332, 82);
+        iconContext.lineTo(414, 182);
+        iconContext.lineTo(260, 238);
+        iconContext.closePath();
+        iconContext.fill();
+        iconContext.stroke();
+        iconContext.beginPath();
+        iconContext.moveTo(172, 132);
+        iconContext.lineTo(260, 238);
+        iconContext.lineTo(260, 410);
+        iconContext.lineTo(156, 298);
+        iconContext.closePath();
+        iconContext.fillStyle = 'rgba(124, 58, 237, 0.58)';
+        iconContext.fill();
+        iconContext.stroke();
+        iconContext.beginPath();
+        iconContext.moveTo(260, 238);
+        iconContext.lineTo(414, 182);
+        iconContext.lineTo(398, 344);
+        iconContext.lineTo(260, 410);
+        iconContext.closePath();
+        iconContext.fillStyle = 'rgba(139, 92, 246, 0.48)';
+        iconContext.fill();
+        iconContext.stroke();
+        iconContext.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        iconContext.lineWidth = 5;
+        iconContext.beginPath();
+        iconContext.moveTo(206, 154);
+        iconContext.lineTo(332, 116);
+        iconContext.lineTo(382, 178);
+        iconContext.stroke();
+      } else {
+        iconContext.shadowColor = 'rgba(110, 231, 183, 0.95)';
+        iconContext.fillStyle = 'rgba(167, 243, 208, 0.92)';
+        iconContext.beginPath();
+        iconContext.arc(256, 176, 54, 0, Math.PI * 2);
+        iconContext.fill();
+        const bodyGradient = iconContext.createLinearGradient(174, 238, 338, 390);
+        bodyGradient.addColorStop(0, 'rgba(187, 247, 208, 0.95)');
+        bodyGradient.addColorStop(1, 'rgba(52, 211, 153, 0.82)');
+        iconContext.fillStyle = bodyGradient;
+        iconContext.beginPath();
+        iconContext.moveTo(146, 374);
+        iconContext.quadraticCurveTo(158, 260, 256, 260);
+        iconContext.quadraticCurveTo(354, 260, 366, 374);
+        iconContext.quadraticCurveTo(312, 414, 256, 414);
+        iconContext.quadraticCurveTo(200, 414, 146, 374);
+        iconContext.closePath();
+        iconContext.fill();
+      }
+
+      iconTexture.update();
+      iconPlane = BABYLON.MeshBuilder.CreatePlane(`${nodeData.id}_icon_plane`, { width: nodeData.size * 0.95, height: nodeData.size * 0.95 }, scene);
+      iconPlane.position = sphere.position.clone().add(new BABYLON.Vector3(0, 0, -nodeData.size * 0.03));
+      iconPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+      iconPlane.renderingGroupId = 2;
+      iconPlane.isPickable = false;
+      const iconMat = new BABYLON.StandardMaterial(`${nodeData.id}_icon_plane_mat`, scene);
+      iconMat.diffuseTexture = iconTexture;
+      iconMat.opacityTexture = iconTexture;
+      iconMat.emissiveColor = isProject ? new BABYLON.Color3(0.9, 0.78, 1) : new BABYLON.Color3(0.72, 1, 0.82);
+      iconMat.disableLighting = true;
+      iconMat.disableDepthWrite = true;
+      iconMat.backFaceCulling = false;
+      iconPlane.material = iconMat;
     }
 
     // Etiqueta persistente del nodo
@@ -530,6 +618,12 @@ export class Node3D {
         projectOrbit.position.x = sphere.position.x;
         projectOrbit.position.y = sphere.position.y;
         projectOrbit.position.z = sphere.position.z;
+      }
+
+      if (iconPlane) {
+        iconPlane.position.x = sphere.position.x;
+        iconPlane.position.y = sphere.position.y;
+        iconPlane.position.z = sphere.position.z - nodeData.size * 0.03;
       }
 
       labelPlane.position.x = sphere.position.x;
