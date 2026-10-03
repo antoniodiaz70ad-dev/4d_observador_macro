@@ -94,7 +94,7 @@ const EMPTY_NODES: NodeData[] = [
   { id: 'observer', x: 0, y: 0, z: 45, size: 3.5, energy: 0, label: 'Observador 4D', color: '#00ffff', type: 'self', metadata: { empty: true, coherence: 0 } },
 ];
 
-const EMPTY_BREAKDOWN: Record<string, number> = { projects: 0, relationships: 0, intentions: 0, manifestations: 0 };
+const EMPTY_BREAKDOWN: NonNullable<APIResponse['stats']['breakdown']> = { projects: 0, relationships: 0, intentions: 0, manifestations: 0 };
 const EMPTY_STATS: APIResponse['stats'] = { total: 1, avgEnergy: 0, connections: 0, breakdown: EMPTY_BREAKDOWN, signals: { projects: 0, relationships: 0, dailyEntries: 0, sufficient: false } };
 
 const EXAMPLE_LINKS: LinkData[] = [
