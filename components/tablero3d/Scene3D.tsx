@@ -22,6 +22,7 @@ interface NodeData {
   z: number;
   size: number;
   energy: number;
+  coherence?: number;
   label: string;
   color: string;
   type: string;
