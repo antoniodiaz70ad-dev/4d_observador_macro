@@ -182,6 +182,26 @@ export class Node3D {
       pupilMat.diffuseColor = new BABYLON.Color3(0.75, 1, 1);
       pupil.material = pupilMat;
       pupil.isPickable = false;
+
+      const highlight = BABYLON.MeshBuilder.CreateSphere(
+        `${nodeData.id}_highlight`,
+        { diameter: nodeData.size * 0.22, segments: 24 },
+        scene
+      );
+      highlight.position = sphere.position.clone().add(new BABYLON.Vector3(-nodeData.size * 0.22, nodeData.size * 0.24, -nodeData.size * 0.42));
+      const highlightMat = new BABYLON.StandardMaterial(`${nodeData.id}_highlight_mat`, scene);
+      highlightMat.emissiveColor = new BABYLON.Color3(0.72, 1, 1);
+      highlightMat.diffuseColor = new BABYLON.Color3(0.72, 1, 1);
+      highlightMat.alpha = 0.55;
+      highlightMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
+      highlight.material = highlightMat;
+      highlight.isPickable = false;
+
+      scene.registerBeforeRender(() => {
+        highlight.position.x = sphere.position.x - nodeData.size * 0.22;
+        highlight.position.y = sphere.position.y + nodeData.size * 0.24;
+        highlight.position.z = sphere.position.z - nodeData.size * 0.42;
+      });
     }
 
     // Icono de persona para relaciones: cabeza + cuerpo, como la fotografía
@@ -226,8 +246,8 @@ export class Node3D {
     labelTexture.hasAlpha = true;
     const labelContext = labelTexture.getContext();
     labelContext.clearRect(0, 0, labelWidth, labelHeight);
-    labelContext.fillStyle = 'rgba(5, 12, 25, 0.78)';
-    labelContext.strokeStyle = 'rgba(147, 197, 253, 0.75)';
+    labelContext.fillStyle = 'rgba(5, 12, 25, 0.82)';
+    labelContext.strokeStyle = 'rgba(147, 197, 253, 0.58)';
     labelContext.lineWidth = 3;
     const radius = 22;
     labelContext.beginPath();
@@ -244,17 +264,17 @@ export class Node3D {
     labelContext.fill();
     labelContext.stroke();
     labelContext.fillStyle = '#ffffff';
-    labelContext.font = 'bold 34px sans-serif';
+    labelContext.font = 'bold 32px sans-serif';
     const title = nodeData.label.length > 24 ? `${nodeData.label.slice(0, 21)}…` : nodeData.label;
     labelContext.fillText(title, 34, 62);
     labelContext.fillStyle = 'rgba(191, 219, 254, 0.85)';
-    labelContext.font = '24px sans-serif';
+    labelContext.font = '22px sans-serif';
     const subtitle = nodeData.type === 'self' ? 'Centro de tu mapa' : nodeData.type === 'project' ? 'Proyecto' : nodeData.type === 'relationship' ? 'Relación' : 'Nodo';
     labelContext.fillText(subtitle, 34, 96);
     labelTexture.update();
 
-    const labelPlane = BABYLON.MeshBuilder.CreatePlane(`${nodeData.id}_label`, { width: nodeData.size * 5.8, height: nodeData.size * 1.45 }, scene);
-    labelPlane.position = new BABYLON.Vector3(nodeData.x, nodeData.z + nodeData.size * 1.7, nodeData.y);
+    const labelPlane = BABYLON.MeshBuilder.CreatePlane(`${nodeData.id}_label`, { width: nodeData.size * 5.2, height: nodeData.size * 1.25 }, scene);
+    labelPlane.position = new BABYLON.Vector3(nodeData.x, nodeData.z - nodeData.size * 1.05, nodeData.y);
     labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
     labelPlane.isPickable = false;
 
@@ -450,7 +470,7 @@ export class Node3D {
       }
 
       labelPlane.position.x = sphere.position.x;
-      labelPlane.position.y = sphere.position.y + nodeData.size * 1.7;
+      labelPlane.position.y = sphere.position.y - nodeData.size * 1.05;
       labelPlane.position.z = sphere.position.z;
     });
 

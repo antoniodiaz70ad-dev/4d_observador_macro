@@ -97,6 +97,25 @@ const EMPTY_NODES: NodeData[] = [
 const EMPTY_BREAKDOWN: NonNullable<APIResponse['stats']['breakdown']> = { projects: 0, relationships: 0, intentions: 0, manifestations: 0 };
 const EMPTY_STATS: APIResponse['stats'] = { total: 1, avgEnergy: 0, connections: 0, breakdown: EMPTY_BREAKDOWN, signals: { projects: 0, relationships: 0, dailyEntries: 0, sufficient: false } };
 
+const VISUAL_REFERENCE_NODES: NodeData[] = [
+  { id: 'observer', x: -14, y: 0, z: 22, size: 6.6, energy: 0.9, coherence: 0.9, label: 'Tú / Observador', color: '#67e8f9', type: 'self', metadata: { source: 'Escenario visual de prueba', empty: true } },
+  { id: 'project_levi', x: 16, y: -9, z: 31, size: 5.1, energy: 0.5, coherence: 0.7, label: 'levi / Proyecto', color: '#8b5cf6', type: 'project', metadata: { description: 'chasis', progress: 0, energyInvested: 5, impactLevel: 7, source: 'Escenario visual de prueba' } },
+  { id: 'relationship_diego', x: 8, y: 16, z: 17, size: 4.0, energy: 0.65, coherence: 0.65, label: 'diego / Relación', color: '#6ee7b7', type: 'relationship', metadata: { source: 'Escenario visual de prueba' } },
+];
+
+const VISUAL_REFERENCE_LINKS: LinkData[] = [
+  { source: 'observer', target: 'project_levi', strength: 0.72 },
+  { source: 'observer', target: 'relationship_diego', strength: 0.62 },
+];
+
+const VISUAL_REFERENCE_STATS: APIResponse['stats'] = {
+  total: 3,
+  avgEnergy: 0.68,
+  connections: 2,
+  breakdown: { projects: 1, relationships: 1, intentions: 0, manifestations: 0 },
+  signals: { projects: 1, relationships: 1, dailyEntries: 1, sufficient: true },
+};
+
 const EXAMPLE_LINKS: LinkData[] = [
   { source: 'observer', target: 'work', strength: 0.9 },
   { source: 'observer', target: 'family', strength: 0.95 },
@@ -340,6 +359,17 @@ function Scene3D() {
     setError(null);
     
     try {
+      const visualReferenceMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('visual') === 'reference';
+      if (visualReferenceMode) {
+        setNodesData(VISUAL_REFERENCE_NODES);
+        setLinksData(VISUAL_REFERENCE_LINKS);
+        setStats(VISUAL_REFERENCE_STATS);
+        setBreakdown(VISUAL_REFERENCE_STATS.breakdown ?? EMPTY_BREAKDOWN);
+        setSystemCoherence(0.78);
+        setUsingRealData(false);
+        return;
+      }
+
       const response = await fetch('/api/tablero-3d');
       
       if (!response.ok) {
@@ -495,12 +525,13 @@ function Scene3D() {
     const engine = new BABYLON.Engine(canvasRef.current, true, {
       preserveDrawingBuffer: true,
       stencil: true,
-    });
+    }, true);
+    engine.setHardwareScalingLevel(Math.min(1, 1 / (window.devicePixelRatio || 1)));
     engineRef.current = engine;
 
     // Crear escena
     const scene = new BABYLON.Scene(engine);
-    scene.clearColor = new BABYLON.Color4(0.01, 0.02, 0.08, 1);
+    scene.clearColor = new BABYLON.Color4(0.006, 0.012, 0.035, 1);
     sceneRef.current = scene;
 
     // Cámara con vista isométrica más abierta y centrada
@@ -529,7 +560,7 @@ function Scene3D() {
       new BABYLON.Vector3(0, 1, 0),
       scene
     );
-    light1.intensity = 0.7;
+    light1.intensity = 0.48;
     light1.diffuse = new BABYLON.Color3(0.9, 0.95, 1);
     light1.groundColor = new BABYLON.Color3(0.1, 0.1, 0.2);
 
@@ -539,7 +570,7 @@ function Scene3D() {
       new BABYLON.Vector3(0.5, -1, 0.3),
       scene
     );
-    light2.intensity = 0.9;
+    light2.intensity = 1.18;
     light2.position = new BABYLON.Vector3(30, 80, 30);
 
     // Shadow generator
@@ -642,24 +673,24 @@ function Scene3D() {
       />
 
       {/* Encabezado estilo constelación */}
-      <div className="pointer-events-none absolute left-8 right-8 top-8 z-50 flex items-start justify-between gap-6">
+      <div className="pointer-events-none absolute left-7 right-7 top-7 z-50 flex items-start justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-[0_0_22px_rgba(125,211,252,0.25)]">
+          <h1 className="text-[36px] font-semibold tracking-tight text-white drop-shadow-[0_0_22px_rgba(125,211,252,0.25)]">
             Tu mapa, conectado
           </h1>
-          <p className="mt-2 text-xl text-blue-200/85">
+          <p className="mt-1 text-[18px] text-blue-200/85">
             {stats.total} nodos · {stats.connections} vínculos
           </p>
         </div>
 
-        <div className="pointer-events-auto flex items-center gap-5">
-          <div className="relative w-80">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-200/70" />
+        <div className="pointer-events-auto flex items-center gap-3">
+          <div className="relative w-[300px]">
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-200/70" />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Buscar en tu mapa..."
-              className="h-14 w-full rounded-2xl border border-blue-200/20 bg-slate-950/45 pl-12 pr-10 text-sm text-white shadow-xl shadow-blue-950/20 outline-none backdrop-blur-xl placeholder:text-blue-200/55 focus:border-cyan-300/60"
+              className="h-12 w-full rounded-2xl border border-blue-200/20 bg-slate-950/45 pl-12 pr-10 text-sm text-white shadow-xl shadow-blue-950/20 outline-none backdrop-blur-xl placeholder:text-blue-200/55 focus:border-cyan-300/60"
             />
             {searchTerm && (
               <button
@@ -695,22 +726,22 @@ function Scene3D() {
             )}
           </div>
 
-          <div className="flex h-14 items-center gap-1 rounded-2xl border border-blue-200/20 bg-slate-950/45 p-1 shadow-xl shadow-blue-950/20 backdrop-blur-xl">
+          <div className="flex h-12 items-center gap-1 rounded-2xl border border-blue-200/20 bg-slate-950/45 p-1 shadow-xl shadow-blue-950/20 backdrop-blur-xl">
             <button
               onClick={() => setProjectionMode('2d')}
-              className={`h-12 rounded-xl px-7 text-sm font-semibold transition-all ${projectionMode === '2d' ? 'bg-cyan-400/20 text-cyan-100 shadow-inner shadow-cyan-300/20' : 'text-blue-200/75 hover:text-white'}`}
+              className={`h-10 rounded-xl px-5 text-sm font-semibold transition-all ${projectionMode === '2d' ? 'bg-cyan-400/20 text-cyan-100 shadow-inner shadow-cyan-300/20' : 'text-blue-200/75 hover:text-white'}`}
             >
               2D
             </button>
             <button
               onClick={() => setProjectionMode('3d')}
-              className={`h-12 rounded-xl px-7 text-sm font-semibold transition-all ${projectionMode === '3d' ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/35' : 'text-blue-200/75 hover:text-white'}`}
+              className={`h-10 rounded-xl px-5 text-sm font-semibold transition-all ${projectionMode === '3d' ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/35' : 'text-blue-200/75 hover:text-white'}`}
             >
               3D
             </button>
           </div>
 
-          <div className="rounded-full border border-cyan-200/25 bg-slate-950/35 px-5 py-2 text-sm font-medium text-cyan-100 shadow-xl shadow-cyan-950/20 backdrop-blur-xl">
+          <div className="rounded-full border border-cyan-200/25 bg-slate-950/35 px-4 py-1.5 text-xs font-medium text-cyan-100 shadow-xl shadow-cyan-950/20 backdrop-blur-xl">
             Concepto visual
           </div>
         </div>
@@ -752,8 +783,8 @@ function Scene3D() {
 
           {/* Lista de proyectos orbitando */}
           <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-            <div className="bg-black/80 backdrop-blur-md border border-slate-600/50 rounded-lg p-3 flex items-center gap-4">
-              <Orbit className="h-5 w-5 text-yellow-400" />
+            <div className="bg-black/80 backdrop-blur-md border border-slate-600/50 rounded-lg p-3 flex items-center gap-3">
+              <Orbit className="h-4 w-4 text-yellow-400" />
               <span className="text-sm text-slate-400">Proyectos Orbitando:</span>
               {economyData.projects.length === 0 ? (
                 <span className="text-xs text-slate-500">Ningún proyecto registrado</span>
@@ -790,35 +821,35 @@ function Scene3D() {
       )}
 
       {/* Controles inferiores y memoria del mapa */}
-      <div className="pointer-events-none absolute bottom-8 left-8 right-[390px] z-50 space-y-5">
-        <div className="pointer-events-auto flex flex-wrap items-center gap-4">
+      <div className="pointer-events-none absolute bottom-7 left-7 right-[388px] z-50 space-y-5">
+        <div className="pointer-events-auto flex flex-wrap items-center gap-3">
           <button
             onClick={() => frameNodes()}
-            className="flex h-14 items-center gap-3 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-6 text-sm font-medium text-white shadow-xl shadow-blue-950/25 backdrop-blur-xl hover:border-cyan-300/50 hover:bg-cyan-400/10"
+            className="flex h-12 items-center gap-3 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-5 text-sm font-medium text-white shadow-xl shadow-blue-950/25 backdrop-blur-xl hover:border-cyan-300/50 hover:bg-cyan-400/10"
           >
-            <Maximize2 className="h-5 w-5 text-blue-100" />
+            <Maximize2 className="h-4 w-4 text-blue-100" />
             Centrar mapa
           </button>
 
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex h-14 items-center gap-3 rounded-2xl border px-6 text-sm font-medium shadow-xl shadow-blue-950/25 backdrop-blur-xl transition-all ${showFilters ? 'border-violet-300/50 bg-violet-500/25 text-white' : 'border-blue-200/20 bg-slate-950/55 text-blue-100 hover:border-violet-300/50 hover:bg-violet-400/10'}`}
+            className={`flex h-12 items-center gap-3 rounded-2xl border px-5 text-sm font-medium shadow-xl shadow-blue-950/25 backdrop-blur-xl transition-all ${showFilters ? 'border-violet-300/50 bg-violet-500/25 text-white' : 'border-blue-200/20 bg-slate-950/55 text-blue-100 hover:border-violet-300/50 hover:bg-violet-400/10'}`}
           >
-            <Filter className="h-5 w-5" />
+            <Filter className="h-4 w-4" />
             Filtros
           </button>
 
-          <div className="flex h-14 items-center gap-5 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-6 text-sm text-blue-100 shadow-xl shadow-blue-950/25 backdrop-blur-xl">
-            <span className="flex items-center gap-2"><span className="h-3.5 w-3.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />Tú</span>
-            <span className="flex items-center gap-2"><span className="h-3.5 w-3.5 rounded-full bg-violet-400 shadow-[0_0_12px_rgba(167,139,250,0.9)]" />Proyecto</span>
-            <span className="flex items-center gap-2"><span className="h-3.5 w-3.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(110,231,183,0.9)]" />Relación</span>
+          <div className="flex h-12 items-center gap-3 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-5 text-sm text-blue-100 shadow-xl shadow-blue-950/25 backdrop-blur-xl">
+            <span className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />Tú</span>
+            <span className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-violet-400 shadow-[0_0_12px_rgba(167,139,250,0.9)]" />Proyecto</span>
+            <span className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(110,231,183,0.9)]" />Relación</span>
           </div>
 
           <button
             onClick={() => setDebugMode(!debugMode)}
-            className="flex h-14 items-center gap-3 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-6 text-sm font-medium text-blue-100 shadow-xl shadow-blue-950/25 backdrop-blur-xl hover:border-cyan-300/50 hover:bg-cyan-400/10"
+            className="flex h-12 items-center gap-3 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-5 text-sm font-medium text-blue-100 shadow-xl shadow-blue-950/25 backdrop-blur-xl hover:border-cyan-300/50 hover:bg-cyan-400/10"
           >
-            <Network className="h-5 w-5" />
+            <Network className="h-4 w-4" />
             {debugMode ? 'Reducir alturas' : 'Resaltar alturas'}
           </button>
         </div>
@@ -847,14 +878,14 @@ function Scene3D() {
           </Card>
         )}
 
-        <Card className="pointer-events-auto border-blue-200/20 bg-slate-950/55 p-5 shadow-2xl shadow-blue-950/30 backdrop-blur-xl">
-          <div className="grid grid-cols-[auto_260px_minmax(260px,1fr)_auto] items-center gap-5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/20 bg-blue-400/10">
-              <Layers className="h-7 w-7 text-blue-100" />
+        <Card className="pointer-events-auto border-blue-200/20 bg-slate-950/55 p-4 shadow-2xl shadow-blue-950/30 backdrop-blur-xl">
+          <div className="grid grid-cols-[auto_240px_minmax(300px,1fr)_auto] items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-blue-200/20 bg-blue-400/10">
+              <Layers className="h-6 w-6 text-blue-100" />
             </div>
             <div>
-              <p className="text-lg font-semibold text-white">Memoria del mapa</p>
-              <p className="text-sm text-blue-200/70">{timelineHelpText}</p>
+              <p className="text-base font-semibold text-white">Memoria del mapa</p>
+              <p className="text-xs text-blue-200/70">{timelineHelpText}</p>
             </div>
             <div className="hidden min-w-0 items-center gap-0 lg:flex">
               {timelineSnapshots.length === 0 ? (
@@ -884,11 +915,11 @@ function Scene3D() {
               )}
             </div>
             <div className="flex items-center gap-3">
-              <button disabled={timelineSnapshots.length < 2} title={timelineSnapshots.length < 2 ? 'Necesitas al menos dos capturas reales para reproducir la evolución.' : 'Reproducir evolución'} className="flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/30 bg-slate-950/50 text-blue-100 hover:bg-blue-400/10 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-slate-950/50" aria-label="Reproducir evolución">
-                <Play className="h-5 w-5 fill-current" />
+              <button disabled={timelineSnapshots.length < 2} title={timelineSnapshots.length < 2 ? 'Necesitas al menos dos capturas reales para reproducir la evolución.' : 'Reproducir evolución'} className="flex h-12 w-12 items-center justify-center rounded-full border border-blue-200/30 bg-slate-950/50 text-blue-100 hover:bg-blue-400/10 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-slate-950/50" aria-label="Reproducir evolución">
+                <Play className="h-4 w-4 fill-current" />
               </button>
-              <button disabled={!canCompareSnapshots} title={timelineHelpText} className="flex h-14 items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-violet-500 px-6 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 disabled:cursor-not-allowed disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:shadow-none">
-                <BarChart3 className="h-5 w-5" />
+              <button disabled={!canCompareSnapshots} title={timelineHelpText} className="flex h-12 items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-violet-500 px-5 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 disabled:cursor-not-allowed disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:shadow-none">
+                <BarChart3 className="h-4 w-4" />
                 {canCompareSnapshots ? 'Comparar capturas' : 'Selecciona 2'}
               </button>
             </div>
@@ -898,7 +929,7 @@ function Scene3D() {
 
       {/* Panel de información del nodo seleccionado - MOTOR DE SIGNIFICADO */}
       {selectedNode && (
-        <div className="absolute right-8 top-36 z-40 w-[380px] max-h-[calc(100vh-10rem)] animate-in slide-in-from-right overflow-y-auto pr-1">
+        <div className="absolute right-6 top-[118px] z-40 w-[370px] max-h-[calc(100vh-10rem)] animate-in slide-in-from-right overflow-y-auto pr-1">
           <Card className="border-blue-200/20 bg-slate-950/70 p-6 shadow-2xl shadow-blue-950/40 backdrop-blur-2xl">
             {/* Header con estado */}
             <div className="flex items-start justify-between mb-4">
@@ -933,7 +964,7 @@ function Scene3D() {
                 onClick={() => setSelectedNode(null)}
                 className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-700 rounded"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -1052,7 +1083,7 @@ function Scene3D() {
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Network className="h-3.5 w-3.5 text-cyan-300" />
+                  <Network className="h-3 w-3 text-cyan-300" />
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Vínculos registrados</p>
                 </div>
 

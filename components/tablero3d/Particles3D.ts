@@ -4,7 +4,7 @@ import * as BABYLON from '@babylonjs/core';
 export class Particles3D {
   static create(scene: BABYLON.Scene): void {
     // Sistema de partículas ambientales
-    const particleSystem = new BABYLON.ParticleSystem('particles', 2000, scene);
+    const particleSystem = new BABYLON.ParticleSystem('particles', 420, scene);
 
     // Textura de partícula (punto brillante)
     particleSystem.particleTexture = new BABYLON.Texture(
@@ -14,24 +14,24 @@ export class Particles3D {
 
     // Emisor (volumen esférico)
     particleSystem.emitter = BABYLON.Vector3.Zero();
-    particleSystem.minEmitBox = new BABYLON.Vector3(-40, -5, -40);
-    particleSystem.maxEmitBox = new BABYLON.Vector3(40, 20, 40);
+    particleSystem.minEmitBox = new BABYLON.Vector3(-48, -8, -38);
+    particleSystem.maxEmitBox = new BABYLON.Vector3(48, 28, 38);
 
     // Colores
-    particleSystem.color1 = new BABYLON.Color4(0, 0.8, 1, 0.8);
-    particleSystem.color2 = new BABYLON.Color4(0.5, 0.3, 1, 0.6);
+    particleSystem.color1 = new BABYLON.Color4(0.25, 0.85, 1, 0.38);
+    particleSystem.color2 = new BABYLON.Color4(0.55, 0.45, 1, 0.24);
     particleSystem.colorDead = new BABYLON.Color4(0, 0, 0, 0);
 
     // Tamaño
-    particleSystem.minSize = 0.1;
-    particleSystem.maxSize = 0.4;
+    particleSystem.minSize = 0.045;
+    particleSystem.maxSize = 0.16;
 
     // Vida
     particleSystem.minLifeTime = 5;
     particleSystem.maxLifeTime = 10;
 
     // Emisión
-    particleSystem.emitRate = 50;
+    particleSystem.emitRate = 14;
 
     // Blend mode
     particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
@@ -52,7 +52,7 @@ export class Particles3D {
     particleSystem.start();
 
     // Partículas de energía más brillantes (menos cantidad)
-    const energyParticles = new BABYLON.ParticleSystem('energyParticles', 500, scene);
+    const energyParticles = new BABYLON.ParticleSystem('energyParticles', 90, scene);
     energyParticles.particleTexture = particleSystem.particleTexture;
 
     energyParticles.emitter = BABYLON.Vector3.Zero();
@@ -63,13 +63,13 @@ export class Particles3D {
     energyParticles.color2 = new BABYLON.Color4(0.5, 1, 1, 0.8);
     energyParticles.colorDead = new BABYLON.Color4(0, 0, 0, 0);
 
-    energyParticles.minSize = 0.2;
-    energyParticles.maxSize = 0.6;
+    energyParticles.minSize = 0.06;
+    energyParticles.maxSize = 0.22;
 
     energyParticles.minLifeTime = 3;
     energyParticles.maxLifeTime = 6;
 
-    energyParticles.emitRate = 20;
+    energyParticles.emitRate = 4;
     energyParticles.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
 
     energyParticles.direction1 = new BABYLON.Vector3(-1, 0.2, -1);
