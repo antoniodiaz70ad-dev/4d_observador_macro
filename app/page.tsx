@@ -1,350 +1,193 @@
-
 import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Eye, Brain, Target, Sparkles, ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Eye, Fingerprint, LogIn, Network, Sparkles, TimerReset } from 'lucide-react';
+
+function HorusEyeMark() {
+  return (
+    <div className="relative mx-auto h-[260px] w-[340px] max-w-[82vw] md:h-[360px] md:w-[520px]" aria-hidden="true">
+      <div className="absolute inset-0 rounded-full bg-cyan-400/10 blur-3xl" />
+      <div className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/20 blur-2xl md:h-72 md:w-72" />
+      <svg viewBox="0 0 520 360" className="relative h-full w-full drop-shadow-[0_0_42px_rgba(250,204,21,0.38)]">
+        <defs>
+          <radialGradient id="irisGlow" cx="50%" cy="48%" r="52%">
+            <stop offset="0%" stopColor="#fff7ad" />
+            <stop offset="42%" stopColor="#facc15" />
+            <stop offset="74%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#7c2d12" />
+          </radialGradient>
+          <linearGradient id="goldStroke" x1="54" y1="164" x2="463" y2="164" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#fef3c7" />
+            <stop offset="0.32" stopColor="#fbbf24" />
+            <stop offset="0.68" stopColor="#22d3ee" />
+            <stop offset="1" stopColor="#a78bfa" />
+          </linearGradient>
+          <linearGradient id="wingGradient" x1="64" y1="96" x2="472" y2="92" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#f59e0b" stopOpacity="0.15" />
+            <stop offset="0.35" stopColor="#fef08a" />
+            <stop offset="0.7" stopColor="#38bdf8" />
+            <stop offset="1" stopColor="#8b5cf6" stopOpacity="0.4" />
+          </linearGradient>
+          <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="5" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <path
+          d="M60 174C118 96 190 61 279 74c74 11 126 58 181 94-60-14-105-8-148 13-57 28-104 48-168 28-33-10-58-23-84-35Z"
+          fill="rgba(15,23,42,0.7)"
+          stroke="url(#goldStroke)"
+          strokeWidth="7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          filter="url(#softGlow)"
+        />
+        <path
+          d="M92 143c72-59 151-88 247-61 38 11 75 30 114 55-70-20-132-19-189 3-63 24-114 27-172 3Z"
+          fill="url(#wingGradient)"
+          opacity="0.72"
+        />
+        <ellipse cx="250" cy="163" rx="75" ry="64" fill="rgba(7,18,31,0.92)" stroke="#fef3c7" strokeWidth="4" />
+        <circle cx="250" cy="163" r="48" fill="url(#irisGlow)" filter="url(#softGlow)" />
+        <circle cx="250" cy="163" r="20" fill="#06111f" />
+        <circle cx="236" cy="145" r="12" fill="#fff7ed" opacity="0.95" />
+        <path d="M143 212c-8 36-24 64-54 84" fill="none" stroke="#fbbf24" strokeWidth="8" strokeLinecap="round" />
+        <path d="M204 226c-4 38-20 70-48 95" fill="none" stroke="#22d3ee" strokeWidth="7" strokeLinecap="round" opacity="0.86" />
+        <path d="M250 232c21 34 55 51 104 49" fill="none" stroke="#8b5cf6" strokeWidth="7" strokeLinecap="round" opacity="0.82" />
+        <path d="M78 116c92-77 220-105 366-20" fill="none" stroke="#fde68a" strokeWidth="5" strokeLinecap="round" opacity="0.62" />
+        <circle cx="388" cy="184" r="5" fill="#67e8f9" />
+        <circle cx="417" cy="171" r="3" fill="#fde68a" />
+        <circle cx="118" cy="174" r="4" fill="#fde68a" />
+      </svg>
+    </div>
+  );
+}
+
+const productSteps = [
+  {
+    icon: Fingerprint,
+    title: 'Registra lo importante',
+    text: 'Guarda tu día, proyectos, relaciones y señales sin llenar formularios pesados.',
+  },
+  {
+    icon: Network,
+    title: 'Mira el sistema',
+    text: 'El mapa conecta personas, proyectos y decisiones para que no dependas de la memoria.',
+  },
+  {
+    icon: TimerReset,
+    title: 'Compara cambios',
+    text: 'Memory 4D te ayuda a ver qué cambió entre capturas y qué pide atención.',
+  },
+];
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-purple-900/20" />
-        
-        {/* Background Image */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="relative w-full h-full">
-            <Image
-              src="https://static.abacusaicdn.net/images/6724d069-5237-43ef-a53a-0079d1695f63.jpg"
-              alt="Cosmic background"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
+    <main className="relative min-h-screen overflow-hidden bg-[#050b18] text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(250,204,21,0.16),transparent_28%),radial-gradient(circle_at_78%_18%,rgba(124,58,237,0.25),transparent_30%),radial-gradient(circle_at_58%_76%,rgba(34,211,238,0.16),transparent_34%)]" />
+      <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(148,163,184,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,.08)_1px,transparent_1px)] [background-size:44px_44px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(125,211,252,0.45)_1px,transparent_1.4px)] [background-size:42px_42px] opacity-20" />
+      <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-cyan-300/10 to-transparent" />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-20">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center mb-6">
-              <div className="relative w-16 h-16">
-                <Image
-                  src="https://static.abacusaicdn.net/images/8b3c86df-3ee5-498b-b24a-abe5f9430807.jpg"
-                  alt="Third Eye Symbol"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-            
-            <h1 className="text-6xl md:text-7xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                OBSERVADOR
-              </span>
-              <br />
-              <span className="text-4xl md:text-5xl text-cyan-300">4D</span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto">
-              Un centro de comando para registrar decisiones, observar patrones en 3D/4D y usar IA para convertir evidencia en próximos movimientos.
-            </p>
+      <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-6 md:px-8">
+        <Link href="/" className="group flex items-center gap-3" aria-label="Observador 4D inicio">
+          <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-200/30 bg-slate-900/70 shadow-[0_0_28px_rgba(250,204,21,0.25)]">
+            <Eye className="h-7 w-7 text-amber-200 transition-transform group-hover:scale-110" />
+          </span>
+          <span>
+            <span className="block text-sm font-semibold uppercase tracking-[0.38em] text-slate-100">Observador 4D</span>
+            <span className="block text-[11px] uppercase tracking-[0.32em] text-cyan-200/70">Ver más · vivir mejor</span>
+          </span>
+        </Link>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/signup">
-                <Button size="lg" className="bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white text-lg px-8 py-4">
-                  <Play className="mr-2 h-5 w-5" />
-                  Crear cuenta
-                </Button>
-              </Link>
-              
-              <Link href="/auth/login">
-                <Button size="lg" variant="outline" className="border-purple-400/50 text-purple-300 hover:bg-purple-500/10 text-lg px-8 py-4">
-                  <Eye className="mr-2 h-5 w-5" />
-                  Iniciar sesión
-                </Button>
-              </Link>
-            </div>
+        <nav className="hidden items-center gap-3 md:flex">
+          <Link href="/tablero-3d" className="rounded-full border border-cyan-200/20 px-4 py-2 text-sm text-cyan-100 transition hover:border-cyan-200/50 hover:bg-cyan-300/10">
+            Explorar mapa
+          </Link>
+          <Link href="/auth/login" className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10">
+            Entrar
+          </Link>
+        </nav>
+      </header>
+
+      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-96px)] w-full max-w-7xl items-center gap-10 px-5 pb-12 pt-4 md:grid-cols-[1fr_0.92fr] md:px-8 md:pb-16">
+        <div className="max-w-3xl">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200/25 bg-amber-200/10 px-4 py-2 text-sm text-amber-100 shadow-[0_0_24px_rgba(250,204,21,0.12)]">
+            <Sparkles className="h-4 w-4" />
+            Una entrada visual para observar antes de decidir
           </div>
 
-          {/* Hero Visual */}
-          <div className="relative mx-auto max-w-4xl">
-            <div className="relative aspect-video rounded-2xl overflow-hidden border border-purple-500/30 bg-slate-900/50 backdrop-blur-sm">
-              <Image
-                src="https://static.abacusaicdn.net/images/7d2fc79d-debc-46b9-8d7e-45c7a609e3f4.png"
-                alt="Consciousness Expansion - Person viewing life from 4D perspective"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6">
-                <h3 className="text-white text-xl font-semibold mb-2">
-                  Ejemplo: convierte capturas en decisiones visibles
-                </h3>
-                <p className="text-slate-300">
-                  Registra un estado, compara el antes/después y abre el mapa 3D para ver relaciones, energía y tensión.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+          <h1 className="text-5xl font-black leading-[0.95] tracking-tight text-white md:text-7xl lg:text-8xl">
+            Abre tu mapa.
+            <span className="block bg-gradient-to-r from-amber-200 via-yellow-400 to-cyan-300 bg-clip-text text-transparent">
+              Observa el sistema.
+            </span>
+          </h1>
 
-      {/* Concepto 3D vs 4D */}
-      <section className="py-20 bg-gradient-to-b from-transparent to-slate-900/50">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              La Transición <span className="text-purple-400">Dimensional</span>
-            </h2>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Pasa de reaccionar a eventos sueltos a mirar evidencia, relaciones y decisiones dentro de un sistema
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Modo 3D */}
-            <Card className="bg-red-900/20 border-red-500/30 backdrop-blur-sm">
-              <CardContent className="p-8">
-                <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-2xl font-bold text-red-400">3D</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">Modo Reactivo</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <span className="text-red-400 font-bold">•</span>
-                    <div>
-                      <h4 className="text-white font-semibold">Yo físico dentro del entorno</h4>
-                      <p className="text-slate-400">Te identificas con tu experiencia inmediata</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="text-red-400 font-bold">•</span>
-                    <div>
-                      <h4 className="text-white font-semibold">Energía reactiva y lineal</h4>
-                      <p className="text-slate-400">Respondes a las circunstancias externas</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="text-red-400 font-bold">•</span>
-                    <div>
-                      <h4 className="text-white font-semibold">Resultado: Esfuerzo y fricción</h4>
-                      <p className="text-slate-400">Manifestaciones lentas y con resistencia</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Modo 4D */}
-            <Card className="bg-gradient-to-br from-purple-900/30 to-cyan-900/30 border-purple-500/30 backdrop-blur-sm">
-              <CardContent className="p-8">
-                <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-2xl font-bold text-white">4D</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">Modo Estratégico</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <span className="text-purple-400 font-bold">•</span>
-                    <div>
-                      <h4 className="text-white font-semibold">Yo observador del sistema</h4>
-                      <p className="text-slate-400">Ves tu vida desde una perspectiva superior</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="text-purple-400 font-bold">•</span>
-                    <div>
-                      <h4 className="text-white font-semibold">Energía cuántica y estratégica</h4>
-                      <p className="text-slate-400">Actúas desde la intención consciente</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="text-purple-400 font-bold">•</span>
-                    <div>
-                      <h4 className="text-white font-semibold">Resultado: Flujo y sincronía</h4>
-                      <p className="text-slate-400">Manifestaciones rápidas y armoniosas</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Características de la Plataforma */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Herramientas de <span className="text-cyan-400">Expansión</span>
-            </h2>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Herramientas para capturar memoria, visualizar relaciones y decidir con más claridad
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Dashboard 4D */}
-            <Card className="bg-slate-900/50 border-purple-500/30 backdrop-blur-sm hover:border-purple-400/50 transition-all hover:shadow-lg hover:shadow-purple-500/20">
-              <CardContent className="p-6">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mb-4">
-                  <Eye className="h-6 w-6 text-purple-400" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">Dashboard de Visión 4D</h3>
-                <p className="text-slate-400 mb-4">
-                  Visualiza tu vida como un tablero de juego interactivo desde la perspectiva del observador superior.
-                </p>
-                <div className="relative aspect-video bg-gradient-to-br from-purple-900/30 to-transparent rounded-lg overflow-hidden border border-purple-500/20">
-                  <Image
-                    src="https://static.abacusaicdn.net/images/e9e50ee5-6850-4683-ad8d-0390759686de.jpg"
-                    alt="Network connections visualization"
-                    fill
-                    className="object-cover opacity-60"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Medidor de Coherencia */}
-            <Card className="bg-slate-900/50 border-cyan-500/30 backdrop-blur-sm hover:border-cyan-400/50 transition-all hover:shadow-lg hover:shadow-cyan-500/20">
-              <CardContent className="p-6">
-                <div className="w-12 h-12 bg-cyan-500/20 rounded-full flex items-center justify-center mb-4">
-                  <Brain className="h-6 w-6 text-cyan-400" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">Medidor de Coherencia</h3>
-                <p className="text-slate-400 mb-4">
-                  Mide tu alineación entre emociones, lógica y energía para optimizar tu frecuencia dimensional.
-                </p>
-                <div className="relative aspect-video bg-gradient-to-br from-cyan-900/30 to-transparent rounded-lg overflow-hidden border border-cyan-500/20">
-                  <Image
-                    src="https://static.abacusaicdn.net/images/93ba7fd6-2823-4727-be2e-1475e14fdcfe.jpg"
-                    alt="Sacred geometry - Flower of Life"
-                    fill
-                    className="object-cover opacity-60"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Sistema de Manifestación */}
-            <Card className="bg-slate-900/50 border-yellow-500/30 backdrop-blur-sm hover:border-yellow-400/50 transition-all hover:shadow-lg hover:shadow-yellow-500/20">
-              <CardContent className="p-6">
-                <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mb-4">
-                  <Target className="h-6 w-6 text-yellow-400" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">Manifestación Estratégica</h3>
-                <p className="text-slate-400 mb-4">
-                  Programa y rastrea tus intenciones desde la perspectiva dimensional para manifestar con precisión.
-                </p>
-                <div className="relative aspect-video bg-gradient-to-br from-yellow-900/30 to-transparent rounded-lg overflow-hidden border border-yellow-500/20">
-                  <Image
-                    src="https://static.abacusaicdn.net/images/3ab46aa5-d2d2-438f-b11f-24347ec2947b.jpg"
-                    alt="Energy flow and manifestation"
-                    fill
-                    className="object-cover opacity-60"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Mapeo de Patrones */}
-            <Card className="bg-slate-900/50 border-green-500/30 backdrop-blur-sm hover:border-green-400/50 transition-all hover:shadow-lg hover:shadow-green-500/20">
-              <CardContent className="p-6">
-                <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
-                  <Sparkles className="h-6 w-6 text-green-400" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">Detección de Sincronicidades</h3>
-                <p className="text-slate-400 mb-4">
-                  Identifica patrones fractales y sincronicidades en tu experiencia para fortalecer tu conexión 4D.
-                </p>
-                <div className="relative aspect-video bg-gradient-to-br from-green-900/30 to-transparent rounded-lg overflow-hidden border border-green-500/20">
-                  <Image
-                    src="https://static.abacusaicdn.net/images/ff31f004-0231-46a2-a5b8-1fb94a1eb0fa.jpg"
-                    alt="Sri Yantra sacred geometry"
-                    fill
-                    className="object-cover opacity-60"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Ejercicios de Elevación */}
-            <Card className="bg-slate-900/50 border-indigo-500/30 backdrop-blur-sm hover:border-indigo-400/50 transition-all hover:shadow-lg hover:shadow-indigo-500/20">
-              <CardContent className="p-6">
-                <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center mb-4">
-                  <Eye className="h-6 w-6 text-indigo-400" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">Ejercicios de Elevación</h3>
-                <p className="text-slate-400 mb-4">
-                  Prácticas guiadas para desarrollar tu capacidad de observación 4D y codificación de intenciones.
-                </p>
-                <div className="relative aspect-video bg-gradient-to-br from-indigo-900/30 to-transparent rounded-lg overflow-hidden border border-indigo-500/20">
-                  <Image
-                    src="https://static.abacusaicdn.net/images/871f0ed2-7cca-4d5e-b93a-6d593c46d83c.jpg"
-                    alt="Merkaba star tetrahedron"
-                    fill
-                    className="object-cover opacity-60"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Análisis Dimensional */}
-            <Card className="bg-slate-900/50 border-pink-500/30 backdrop-blur-sm hover:border-pink-400/50 transition-all hover:shadow-lg hover:shadow-pink-500/20">
-              <CardContent className="p-6">
-                <div className="w-12 h-12 bg-pink-500/20 rounded-full flex items-center justify-center mb-4">
-                  <Brain className="h-6 w-6 text-pink-400" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">Análisis Dimensional</h3>
-                <p className="text-slate-400 mb-4">
-                  Recibe insights automáticos sobre tus patrones de comportamiento y evolución de conciencia.
-                </p>
-                <div className="relative aspect-video bg-gradient-to-br from-pink-900/30 to-transparent rounded-lg overflow-hidden border border-pink-500/20">
-                  <Image
-                    src="https://static.abacusaicdn.net/images/175ce93b-f3d9-42fc-adc9-a0328d8c4afc.jpg"
-                    alt="Infinity DNA helix"
-                    fill
-                    className="object-cover opacity-60"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Final */}
-      <section className="py-20 bg-gradient-to-t from-slate-900 to-transparent">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Inicia tu <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">Expansión 4D</span>
-          </h2>
-          <p className="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
-            Transforma tu realidad desde la macrovisión. Desarrolla la conciencia del observador y manifiesta con flujo dimensional.
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300 md:text-xl">
+            Observador 4D convierte proyectos, relaciones, registros diarios y cambios en una constelación clara. Entra para explorar qué está activo, qué cambió y cuál es el siguiente movimiento con evidencia.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/signup">
-              <Button size="lg" className="bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white text-lg px-8 py-4">
-                <Play className="mr-2 h-5 w-5" />
-                Comenzar Ahora
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/tablero-3d"
+              className="group inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-amber-300 via-yellow-400 to-cyan-300 px-6 py-4 text-base font-bold text-slate-950 shadow-[0_18px_50px_rgba(250,204,21,0.25)] transition hover:scale-[1.01]"
+            >
+              Explorar el mapa
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="inline-flex items-center justify-center rounded-2xl border border-cyan-200/30 bg-cyan-200/10 px-6 py-4 text-base font-semibold text-cyan-50 backdrop-blur transition hover:bg-cyan-200/15"
+            >
+              Crear cuenta
+            </Link>
+            <Link
+              href="/auth/login"
+              className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-base font-semibold text-slate-100 backdrop-blur transition hover:bg-white/10"
+            >
+              <LogIn className="mr-2 h-5 w-5" />
+              Iniciar sesión
             </Link>
           </div>
 
-          <p className="text-slate-500 text-sm mt-6">
-            Únete a los observadores que ya están manifestando desde el 4D
-          </p>
+          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+              <p className="text-2xl font-bold text-amber-200">Mapa</p>
+              <p className="mt-1 text-sm text-slate-400">Proyectos y relaciones visibles.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+              <p className="text-2xl font-bold text-cyan-200">Memoria</p>
+              <p className="mt-1 text-sm text-slate-400">Capturas para comparar evolución.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+              <p className="text-2xl font-bold text-violet-200">Decisión</p>
+              <p className="mt-1 text-sm text-slate-400">Señales antes de recomendar.</p>
+            </div>
+          </div>
         </div>
+
+        <aside className="relative">
+          <div className="absolute -inset-10 rounded-full bg-amber-300/10 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/55 p-5 shadow-2xl shadow-cyan-950/40 backdrop-blur-xl md:p-8">
+            <div className="absolute right-5 top-5 rounded-full border border-cyan-200/25 px-3 py-1 text-xs uppercase tracking-[0.24em] text-cyan-100/80">
+              Portal 4D
+            </div>
+            <HorusEyeMark />
+            <div className="grid gap-3 md:grid-cols-3">
+              {productSteps.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                  <item.icon className="mb-3 h-5 w-5 text-amber-200" />
+                  <h2 className="text-sm font-bold text-white">{item.title}</h2>
+                  <p className="mt-2 text-xs leading-5 text-slate-400">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
       </section>
-    </div>
+    </main>
   );
 }
