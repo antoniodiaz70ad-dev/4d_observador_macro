@@ -159,6 +159,40 @@ export function ProjectsPanel() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      all: 'Todos',
+      active: 'Activo',
+      paused: 'Pausado',
+      completed: 'Completado',
+      cancelled: 'Cancelado',
+    };
+    return labels[status] || status.replace(/_/g, ' ');
+  };
+
+  const getStatusPluralLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      all: 'Todos',
+      active: 'Activos',
+      paused: 'Pausados',
+      completed: 'Completados',
+      cancelled: 'Cancelados',
+    };
+    return labels[status] || getStatusLabel(status);
+  };
+
+  const getCategoryLabel = (category?: string) => {
+    const labels: Record<string, string> = {
+      personal: 'Personal',
+      professional: 'Profesional',
+      spiritual: 'Espiritual',
+      health: 'Salud',
+      relationships: 'Relaciones',
+      financial: 'Financiero',
+    };
+    return category ? (labels[category] || category.replace(/_/g, ' ')) : '';
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -257,7 +291,7 @@ export function ProjectsPanel() {
           </div>
           <div>
             <div className="text-2xl font-bold text-purple-400">{projectStats.avgProgress}%</div>
-            <div className="text-xs text-slate-400">Progreso Avg</div>
+            <div className="text-xs text-slate-400">Progreso promedio</div>
           </div>
         </div>
 
@@ -274,7 +308,7 @@ export function ProjectsPanel() {
                 : 'text-slate-400 hover:text-slate-200'
               }
             >
-              {status === 'all' ? 'Todos' : status.charAt(0).toUpperCase() + status.slice(1)}
+              {getStatusPluralLabel(status)}
             </Button>
           ))}
         </div>
@@ -302,7 +336,7 @@ export function ProjectsPanel() {
                         >
                           <span className="flex items-center gap-1">
                             {getStatusIcon(project.status)}
-                            {project.status}
+                            {getStatusLabel(project.status)}
                           </span>
                         </Badge>
                       </div>
@@ -337,7 +371,7 @@ export function ProjectsPanel() {
                           variant="outline" 
                           className={`text-xs ${getCategoryColor(project.category)}`}
                         >
-                          {project.category}
+                          {getCategoryLabel(project.category)}
                         </Badge>
                       )}
                       
@@ -414,7 +448,7 @@ export function ProjectsPanel() {
                 <Target className="h-7 w-7" />
               </div>
               <h3 className="text-lg font-semibold text-white">
-                {projects.length === 0 ? 'Crea tu primer proyecto' : `No hay proyectos en estado ${filter}`}
+                {projects.length === 0 ? 'Crea tu primer proyecto' : `No hay proyectos en estado ${getStatusLabel(filter).toLowerCase()}`}
               </h3>
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-400">
                 Un proyecto es el primer nodo de tu mapa 4D. Puede ser un negocio, una relación, un hábito, una inversión o una meta personal que quieras observar con claridad.

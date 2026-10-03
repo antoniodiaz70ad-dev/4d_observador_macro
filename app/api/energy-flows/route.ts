@@ -40,36 +40,57 @@ export async function GET(request: NextRequest) {
 
     // Agrupar energía por categorías
     const energyByCategory: Record<string, number> = {};
+    const contributorsByCategory: Record<string, Array<{
+      label: string;
+      kind: string;
+      baseValue: number;
+      factor: number;
+      factorLabel: string;
+      rawValue: number;
+      formula: string;
+    }>> = {};
 
     // Energía invertida en proyectos: suma directa de energyInvested (1-10) por categoría.
     projects.forEach(project => {
       const category = project.category || 'personal';
-      energyByCategory[category] = (energyByCategory[category] || 0) + project.energyInvested;
+      const rawValue = project.energyInvested;
+      energyByCategory[category] = (energyByCategory[category] || 0) + rawValue;
+      contributorsByCategory[category] = contributorsByCategory[category] || [];
+      contributorsByCategory[category].push({
+        label: project.name,
+        kind: 'Proyecto',
+        baseValue: project.energyInvested,
+        factor: 1,
+        factorLabel: 'energía invertida',
+        rawValue: Math.round(rawValue * 10) / 10,
+        formula: `${project.energyInvested} × 1 = ${Math.round(rawValue * 10) / 10}`,
+      });
     });
 
     // Energía en relaciones
     relationships.forEach(relationship => {
       const category = `relaciones_${relationship.relationshipType}`;
-      let energyValue = 0;
+      const exchangeFactors: Record<string, { factor: number; label: string }> = {
+        giving: { factor: 0.8, label: 'Dando' },
+        receiving: { factor: 0.4, label: 'Recibiendo' },
+        balanced: { factor: 0.6, label: 'Equilibrado' },
+        draining: { factor: -0.3, label: 'Drenante' },
+      };
+      const exchange = exchangeFactors[relationship.energyExchange] || { factor: 0.5, label: humanizeToken(relationship.energyExchange || 'sin clasificar') };
+      const energyValue = relationship.connectionQuality * exchange.factor;
+      const rawValue = Math.max(0, energyValue);
       
-      switch (relationship.energyExchange) {
-        case 'giving':
-          energyValue = relationship.connectionQuality * 0.8;
-          break;
-        case 'receiving':
-          energyValue = relationship.connectionQuality * 0.4;
-          break;
-        case 'balanced':
-          energyValue = relationship.connectionQuality * 0.6;
-          break;
-        case 'draining':
-          energyValue = relationship.connectionQuality * -0.3;
-          break;
-        default:
-          energyValue = relationship.connectionQuality * 0.5;
-      }
-      
-      energyByCategory[category] = (energyByCategory[category] || 0) + Math.max(0, energyValue);
+      energyByCategory[category] = (energyByCategory[category] || 0) + rawValue;
+      contributorsByCategory[category] = contributorsByCategory[category] || [];
+      contributorsByCategory[category].push({
+        label: relationship.name,
+        kind: 'Relación',
+        baseValue: relationship.connectionQuality,
+        factor: exchange.factor,
+        factorLabel: exchange.label,
+        rawValue: Math.round(rawValue * 10) / 10,
+        formula: `${relationship.connectionQuality} × ${exchange.factor} = ${Math.round(rawValue * 10) / 10}`,
+      });
     });
 
     // Normalizar valores a porcentajes
@@ -78,6 +99,7 @@ export async function GET(request: NextRequest) {
       category: category.replace('relaciones_', ''),
       rawCategory: category,
       rawValue: Math.round(value * 10) / 10,
+      contributors: contributorsByCategory[category] || [],
       value: totalEnergy > 0 ? Math.round((value / totalEnergy) * 100) : 0,
       label: getCategoryLabel(category)
     }));

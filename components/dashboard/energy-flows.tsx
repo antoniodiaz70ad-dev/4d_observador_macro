@@ -34,6 +34,15 @@ interface EnergyFlow {
   label: string;
   rawCategory?: string;
   rawValue?: number;
+  contributors?: Array<{
+    label: string;
+    kind: string;
+    baseValue: number;
+    factor: number;
+    factorLabel: string;
+    rawValue: number;
+    formula: string;
+  }>;
 }
 
 interface EnergyData {
@@ -265,7 +274,18 @@ export function EnergyFlows() {
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {energyData.flows.map(flow => (
               <div key={flow.category} className="rounded-lg bg-slate-950/50 px-3 py-2 text-xs text-slate-300">
-                <span className="font-medium text-slate-100">{flow.label}</span>: {flow.rawValue ?? '—'} / {energyData.calculation?.totalRawEnergy ?? '—'} = {flow.value}%
+                <div>
+                  <span className="font-medium text-slate-100">{flow.label}</span>: {flow.rawValue ?? '—'} / {energyData.calculation?.totalRawEnergy ?? '—'} = {flow.value}%
+                </div>
+                {flow.contributors && flow.contributors.length > 0 && (
+                  <div className="mt-2 space-y-1 border-t border-slate-800 pt-2 text-slate-400">
+                    {flow.contributors.map((item, itemIndex) => (
+                      <div key={`${flow.category}-${itemIndex}`}>
+                        {item.kind} · {item.label}: {item.kind === 'Relación' ? 'calidad' : 'energía'} {item.baseValue} × factor {item.factorLabel} {item.factor} = {item.rawValue}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
