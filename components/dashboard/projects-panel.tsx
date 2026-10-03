@@ -414,7 +414,7 @@ export function ProjectsPanel() {
                 <Target className="h-7 w-7" />
               </div>
               <h3 className="text-lg font-semibold text-white">
-                {filter !== 'all' ? `No hay proyectos en estado ${filter}` : 'Crea tu primer proyecto'}
+                {projects.length === 0 ? 'Crea tu primer proyecto' : `No hay proyectos en estado ${filter}`}
               </h3>
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-400">
                 Un proyecto es el primer nodo de tu mapa 4D. Puede ser un negocio, una relación, un hábito, una inversión o una meta personal que quieras observar con claridad.
