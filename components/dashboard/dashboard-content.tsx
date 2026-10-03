@@ -28,7 +28,9 @@ import {
   ArrowRight,
   CheckCircle2,
   ListChecks,
-  Compass
+  Compass,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { CoherenceMeters } from './coherence-meters';
@@ -58,6 +60,7 @@ export function DashboardContent() {
     entries: [],
   });
   const [showDecisionMode, setShowDecisionMode] = useState(false);
+  const [showExplorer, setShowExplorer] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
 
@@ -192,11 +195,11 @@ export function DashboardContent() {
       accent: 'pink'
     },
     {
-      label: 'Primer registro diario',
+      label: 'Registro de hoy',
       done: hasEntries,
-      description: 'Captura señales, decisiones y energía del día.',
+      description: 'Completa una captura breve de tu día.',
       action: () => router.push('/daily-mapping'),
-      actionLabel: 'Registrar día',
+      actionLabel: 'Completar mi registro de hoy',
       icon: Calendar,
       accent: 'violet'
     }
@@ -215,26 +218,25 @@ export function DashboardContent() {
   const hasMinimumSignals = hasProjects && hasRelationships && hasEntries;
   const missingSignals = setupSteps.filter(step => !step.done).map(step => step.label.toLowerCase());
   const simpleActions = [
-    { label: 'Registrar hoy', description: 'Captura señales, energía y decisiones del día.', icon: Calendar, action: () => router.push('/daily-mapping') },
-    { label: 'Crear proyecto', description: 'Define lo que quieres observar o mover.', icon: Target, action: handleNewProject },
-    { label: 'Agregar relación', description: 'Conecta personas, aliados o dependencias.', icon: Users, action: handleNewRelationship },
-    { label: 'Ver historial', description: 'Revisa cómo evolucionan tus señales.', icon: History, action: () => scrollToSection('timeline-viewer') },
+    { label: 'Completar mi registro de hoy', description: 'Captura breve: cómo estás, qué pasó y qué decisión tomaste.', icon: Calendar, action: () => router.push('/daily-mapping') },
+    { label: 'Ver proyectos activos', description: 'Revisa en qué estás invirtiendo energía.', icon: Target, action: () => scrollToSection('projects-panel') },
+    { label: 'Ver cambios recientes', description: 'Consulta historial y evolución del mapa.', icon: History, action: () => scrollToSection('timeline-viewer') },
   ];
   const explorerActions = [
-    { label: 'Memory 4D', description: 'Compara tu mapa con memoria y patrones.', icon: Brain, action: () => router.push('/memoria-4d') },
-    { label: 'Tablero 3D', description: 'Explora nodos y relaciones en vista espacial.', icon: Box, action: () => router.push('/tablero-3d') },
-    { label: 'Modo Decisión', description: hasMinimumSignals ? 'Analiza una decisión con señales reales.' : 'Se activa mejor cuando completes las tres señales.', icon: Crosshair, action: () => setShowDecisionMode(true) },
-    { label: 'Projects Hub', description: 'Conecta y organiza fuentes de trabajo.', icon: Globe, action: () => router.push('/projects-hub') },
+    { label: 'Historial — Memory 4D', description: 'Compara tu mapa con memoria y patrones.', icon: Brain, action: () => router.push('/memoria-4d') },
+    { label: 'Mapa visual — Tablero 3D', description: 'Explora nodos y relaciones en vista espacial.', icon: Box, action: () => router.push('/tablero-3d') },
+    { label: 'Decisiones — Modo Decisión', description: hasMinimumSignals ? 'Analiza una decisión con señales reales.' : 'Se habilita con proyecto, relación y registro diario.', icon: Crosshair, action: () => setShowDecisionMode(true) },
+    { label: 'Integraciones — Projects Hub', description: 'Conecta y organiza fuentes de trabajo.', icon: Globe, action: () => router.push('/projects-hub') },
   ];
 
   const navigationItems = [
     { name: 'Vista General', icon: Home, action: () => window.scrollTo({ top: 0, behavior: 'smooth' }), current: true },
-    { name: 'Modo Decisión', icon: Crosshair, action: () => setShowDecisionMode(true), current: false, highlight: true, badge: 'CEO' },
-    { name: 'Economy View', icon: Orbit, action: () => router.push('/economy-view'), current: false, highlight: true, badge: '💰' },
-    { name: 'Projects Hub', icon: Globe, action: () => router.push('/projects-hub'), current: false, highlight: true, badge: 'API' },
-    { name: 'Tablero 3D', icon: Box, action: () => router.push('/tablero-3d'), current: false, highlight: true, badge: '3D' },
-    { name: 'Memory 4D', icon: History, action: () => router.push('/memoria-4d'), current: false, highlight: true, badge: 'MEM' },
-    { name: 'Geometría Wolcoff', icon: Sparkles, action: () => router.push('/wolcoff'), current: false, highlight: true, badge: 'NEW' },
+    { name: 'Decisiones — Modo Decisión', icon: Crosshair, action: () => setShowDecisionMode(true), current: false, highlight: true, badge: 'CEO' },
+    { name: 'Economía — Economy View', icon: Orbit, action: () => router.push('/economy-view'), current: false, highlight: true, badge: '💰' },
+    { name: 'Integraciones — Projects Hub', icon: Globe, action: () => router.push('/projects-hub'), current: false, highlight: true, badge: 'API' },
+    { name: 'Mapa visual — Tablero 3D', icon: Box, action: () => router.push('/tablero-3d'), current: false, highlight: true, badge: '3D' },
+    { name: 'Historial — Memory 4D', icon: History, action: () => router.push('/memoria-4d'), current: false, highlight: true, badge: 'MEM' },
+    { name: 'Geometría — Wolcoff', icon: Sparkles, action: () => router.push('/wolcoff'), current: false, highlight: true, badge: 'NEW' },
     { name: 'Proyectos', icon: Target, action: () => scrollToSection('projects-panel'), current: false },
     { name: 'Relaciones', icon: Users, action: () => scrollToSection('relationships-map'), current: false },
     { name: 'Timeline', icon: Calendar, action: () => scrollToSection('timeline-viewer'), current: false },
@@ -371,7 +373,7 @@ export function DashboardContent() {
                   Dashboard 4D
                 </h1>
                 <p className="text-slate-400 text-sm">
-                  Perspectiva macro de tu realidad dimensional
+                  Qué hacer hoy, qué cambió y de dónde salen tus resultados
                 </p>
               </div>
             </div>
@@ -399,79 +401,69 @@ export function DashboardContent() {
           <div className="w-full max-w-full">
             <Card data-testid="today-guidance" className="mb-6 overflow-hidden border-cyan-500/30 bg-gradient-to-br from-slate-900/95 via-purple-950/40 to-cyan-950/30 backdrop-blur-sm shadow-2xl shadow-cyan-950/20">
               <CardContent className="p-5 lg:p-6">
-                <div className="grid gap-5 xl:grid-cols-[1fr_0.8fr]">
+                <div className="grid gap-5 xl:grid-cols-[1fr_0.75fr]">
                   <div>
                     <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
                       <ListChecks className="h-3.5 w-3.5" />
                       Hoy
                     </div>
                     <h2 className="text-2xl font-bold text-white lg:text-3xl">
-                      Empieza aquí y sigue una ruta clara
+                      Completa tu día y revisa lo importante
                     </h2>
                     <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
-                      Captura lo mínimo, revisa qué cambió y después explora el tablero. Modo Decisión requiere proyecto, relación y registro diario; otros módulos, como Flujos de Energía, explican su propia fuente y fórmula.
+                      El objetivo es simple: registra tu día, mira tus proyectos activos y revisa si algo cambió. Los mapas y módulos avanzados quedan en Explorar.
                     </p>
 
+                    <div className="mt-5 rounded-3xl border border-cyan-400/30 bg-cyan-500/10 p-5">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.22em] text-cyan-200">Acción principal</p>
+                          <h3 className="mt-1 text-xl font-bold text-white">Completar mi registro de hoy</h3>
+                          <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                            Captura cómo estás, qué pasó y qué decisión o señal vale la pena recordar.
+                          </p>
+                        </div>
+                        <Button onClick={() => router.push('/daily-mapping')} className="bg-gradient-to-r from-cyan-600 to-purple-600 px-5 hover:from-cyan-500 hover:to-purple-500">
+                          Completar mi registro de hoy
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
                     <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                      {setupSteps.map((step, index) => {
-                        const StepIcon = step.icon;
+                      {simpleActions.map((item) => {
+                        const ItemIcon = item.icon;
                         return (
                           <button
-                            key={step.label}
+                            key={item.label}
                             type="button"
-                            onClick={step.action}
-                            className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-slate-800/70 ${step.done ? 'border-emerald-400/40 bg-emerald-500/10' : 'border-slate-700/70 bg-slate-900/60 hover:border-cyan-400/40'}`}
+                            onClick={item.action}
+                            className="rounded-2xl border border-slate-700/70 bg-slate-900/60 p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-400/40 hover:bg-slate-800/80"
                           >
-                            <div className="mb-3 flex items-center justify-between gap-2">
-                              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-cyan-200">
-                                <StepIcon className="h-5 w-5" />
-                              </div>
-                              {step.done ? (
-                                <CheckCircle2 className="h-5 w-5 text-emerald-300" />
-                              ) : (
-                                <span className="rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-400">{index + 1}</span>
-                              )}
+                            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-cyan-200">
+                              <ItemIcon className="h-5 w-5" />
                             </div>
-                            <p className="font-semibold text-slate-100">{step.label}</p>
-                            <p className="mt-1 text-xs leading-relaxed text-slate-400">{step.description}</p>
+                            <p className="font-semibold text-slate-100">{item.label}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-400">{item.description}</p>
                           </button>
                         );
                       })}
                     </div>
 
-                    <div className="mt-5 grid gap-3 lg:grid-cols-2">
-                      <div className="rounded-2xl border border-slate-700/70 bg-black/20 p-4">
-                        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-cyan-100">
-                          <Compass className="h-4 w-4" />
-                          Ruta simple
-                        </div>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          {simpleActions.map((item) => {
-                            const ItemIcon = item.icon;
-                            return (
-                              <button
-                                key={item.label}
-                                type="button"
-                                onClick={item.action}
-                                className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-3 text-left transition hover:border-cyan-400/40 hover:bg-slate-800/80"
-                              >
-                                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-100">
-                                  <ItemIcon className="h-4 w-4 text-cyan-300" />
-                                  {item.label}
-                                </div>
-                                <p className="text-xs leading-relaxed text-slate-400">{item.description}</p>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="rounded-2xl border border-purple-500/30 bg-purple-950/10 p-4">
-                        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-purple-100">
+                    <div className="mt-5 rounded-2xl border border-purple-500/30 bg-purple-950/10 p-4">
+                      <button
+                        type="button"
+                        onClick={() => setShowExplorer(!showExplorer)}
+                        className="flex w-full items-center justify-between gap-3 text-left"
+                      >
+                        <div className="flex items-center gap-2 text-sm font-semibold text-purple-100">
                           <Sparkles className="h-4 w-4" />
-                          Explorar cuando quieras profundidad
+                          Explorar mapas, geometría e integraciones
                         </div>
-                        <div className="grid gap-2 sm:grid-cols-2">
+                        {showExplorer ? <ChevronUp className="h-4 w-4 text-purple-200" /> : <ChevronDown className="h-4 w-4 text-purple-200" />}
+                      </button>
+                      {showExplorer && (
+                        <div className="mt-4 grid gap-2 sm:grid-cols-2">
                           {explorerActions.map((item) => {
                             const ItemIcon = item.icon;
                             return (
@@ -490,7 +482,7 @@ export function DashboardContent() {
                             );
                           })}
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
@@ -500,7 +492,7 @@ export function DashboardContent() {
                         <NextStepIcon className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.22em] text-purple-200">Siguiente paso recomendado</p>
+                        <p className="text-xs uppercase tracking-[0.22em] text-purple-200">Siguiente paso</p>
                         <h3 className="text-lg font-bold text-white">{nextStep.label}</h3>
                       </div>
                     </div>
@@ -514,14 +506,14 @@ export function DashboardContent() {
                     <p className="mt-2 text-xs text-slate-400">Base del mapa: {setupProgress}/{setupSteps.length} señales listas</p>
 
                     <div className="mt-4 rounded-2xl border border-slate-700/70 bg-slate-950/50 p-4">
-                      <p className="text-sm font-semibold text-slate-100">Claridad de indicadores</p>
+                      <p className="text-sm font-semibold text-slate-100">Qué significan tus indicadores</p>
                       {hasMinimumSignals ? (
                         <p className="mt-2 text-xs leading-relaxed text-emerald-200">
-                          Ya hay señales mínimas para Modo Decisión y Coherencia. Flujos de Energía puede calcular antes si existen proyectos o relaciones, mostrando fuente y fórmula.
+                          Ya puedes usar Coherencia y Modo Decisión. Coherencia compara emoción, lógica y energía; energía representa dónde estás poniendo atención y recursos.
                         </p>
                       ) : (
                         <p className="mt-2 text-xs leading-relaxed text-slate-400">
-                          Aún falta {missingSignals.join(', ')} para Modo Decisión y Coherencia. Si otro módulo muestra porcentajes, debe indicar fuente y fórmula de cálculo.
+                          Te falta {missingSignals.join(', ')} para activar Coherencia y Modo Decisión. Los flujos ya usan los proyectos y relaciones que tengas registrados.
                         </p>
                       )}
                     </div>
@@ -530,9 +522,6 @@ export function DashboardContent() {
                       <Button onClick={nextStep.action} className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500">
                         {nextStep.actionLabel}
                         <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" onClick={() => router.push('/daily-mapping')} className="border-cyan-500/30 text-cyan-200 hover:bg-cyan-500/20">
-                        Hacer registro rápido de hoy
                       </Button>
                     </div>
                   </div>

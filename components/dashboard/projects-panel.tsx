@@ -364,12 +364,12 @@ export function ProjectsPanel() {
                   </div>
 
                   {/* Métricas */}
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-4">
+                  <div className="flex items-start justify-between gap-3 text-sm">
+                    <div className="flex flex-col gap-2">
                       {project.category && (
                         <Badge 
                           variant="outline" 
-                          className={`text-xs ${getCategoryColor(project.category)}`}
+                          className={`w-fit text-xs ${getCategoryColor(project.category)}`}
                         >
                           {getCategoryLabel(project.category)}
                         </Badge>
@@ -377,6 +377,7 @@ export function ProjectsPanel() {
                       
                       <div className="flex items-center gap-1">
                         <Zap className="h-3 w-3 text-yellow-400" />
+                        <span className="text-slate-400">Energía dedicada:</span>
                         <span className={`${getEnergyColor(project.energyInvested)} font-medium`}>
                           {project.energyInvested}/10
                         </span>
@@ -385,6 +386,7 @@ export function ProjectsPanel() {
                       {project.impactLevel && (
                         <div className="flex items-center gap-1">
                           <TrendingUp className="h-3 w-3 text-purple-400" />
+                          <span className="text-slate-400">Impacto esperado:</span>
                           <span className="text-purple-400 font-medium">
                             {project.impactLevel}/10
                           </span>

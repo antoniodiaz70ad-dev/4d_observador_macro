@@ -123,6 +123,12 @@ export function NodeEvolution() {
       || [];
   };
 
+  const formatPointChange = (value: number) => `${value >= 0 ? '+' : ''}${value} pts`;
+
+  const formatDate = (value?: string) => value
+    ? format(new Date(value), 'dd MMM', { locale: es })
+    : 'sin fecha';
+
   if (loading) {
     return (
       <Card className="bg-slate-900/80 border-slate-700 p-6">
@@ -154,10 +160,10 @@ export function NodeEvolution() {
           <Activity className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="text-lg font-medium text-slate-300 mb-2">Sin datos de evolución</h3>
           <p className="text-sm text-slate-500 mb-4">
-            Los snapshots se generarán automáticamente cuando cambien tus nodos.
+            Las capturas se generarán automáticamente cuando cambien tus nodos.
           </p>
           <p className="text-xs text-slate-600">
-            También puedes crear snapshots manuales desde el Tablero 3D
+            También puedes crear capturas manuales desde el Tablero 3D
           </p>
         </div>
       </Card>
@@ -195,7 +201,7 @@ export function NodeEvolution() {
       <div className="grid grid-cols-4 gap-3 mb-6">
         <div className="bg-slate-800/50 rounded-lg p-3 text-center">
           <p className="text-2xl font-bold text-white">{data.summary.total}</p>
-          <p className="text-xs text-slate-400">Snapshots</p>
+          <p className="text-xs text-slate-400">Capturas</p>
         </div>
         <div className="bg-green-500/10 rounded-lg p-3 text-center border border-green-500/20">
           <p className="text-2xl font-bold text-green-400">{data.summary.improving}</p>
@@ -241,14 +247,21 @@ export function NodeEvolution() {
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {filteredTrends.length === 0 ? (
           <p className="text-center text-slate-500 py-4">
-            No hay nodos con snapshots en este período
+            No hay nodos con capturas en este período
           </p>
         ) : (
           filteredTrends.map(trend => {
             const config = TREND_CONFIG[trend.trend];
             const TrendIcon = config.icon;
             const isExpanded = expandedNode === trend.nodeId;
-            const snapshots = isExpanded ? getNodeSnapshots(trend.nodeId) : [];
+            const allSnapshots = getNodeSnapshots(trend.nodeId);
+            const snapshots = isExpanded ? allSnapshots : [];
+            const firstSnapshot = allSnapshots[0];
+            const lastSnapshot = allSnapshots[allSnapshots.length - 1];
+            const energyBefore = firstSnapshot ? Math.round(firstSnapshot.energy * 100) : null;
+            const energyAfter = lastSnapshot ? Math.round(lastSnapshot.energy * 100) : null;
+            const coherenceBefore = firstSnapshot ? Math.round(firstSnapshot.coherence * 100) : null;
+            const coherenceAfter = lastSnapshot ? Math.round(lastSnapshot.coherence * 100) : null;
 
             return (
               <div key={trend.nodeId} className="bg-slate-800/50 rounded-lg border border-slate-700/50">
@@ -268,24 +281,20 @@ export function NodeEvolution() {
                     </div>
                     <div className="text-left">
                       <p className="text-white font-medium">{trend.nodeLabel}</p>
-                      <p className="text-xs text-slate-500">{trend.snapshotCount} snapshots</p>
+                      <p className="text-xs text-slate-500">{trend.snapshotCount} capturas · {formatDate(firstSnapshot?.createdAt)} → {formatDate(lastSnapshot?.createdAt)}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-4">
                     {/* Cambios */}
-                    <div className="flex items-center gap-3 text-sm">
-                      <div className="flex items-center gap-1">
+                    <div className="hidden text-right text-xs text-slate-400 md:block">
+                      <div className="flex items-center justify-end gap-1">
                         <Zap className="w-3 h-3 text-yellow-400" />
-                        <span className={trend.energyChange >= 0 ? 'text-green-400' : 'text-red-400'}>
-                          {trend.energyChange >= 0 ? '+' : ''}{trend.energyChange}%
-                        </span>
+                        <span>Energía: {energyBefore ?? '—'} → {energyAfter ?? '—'} ({formatPointChange(trend.energyChange)})</span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="mt-1 flex items-center justify-end gap-1">
                         <Activity className="w-3 h-3 text-cyan-400" />
-                        <span className={trend.coherenceChange >= 0 ? 'text-green-400' : 'text-red-400'}>
-                          {trend.coherenceChange >= 0 ? '+' : ''}{trend.coherenceChange}%
-                        </span>
+                        <span>Coherencia: {coherenceBefore ?? '—'} → {coherenceAfter ?? '—'} ({formatPointChange(trend.coherenceChange)})</span>
                       </div>
                     </div>
                     
@@ -334,7 +343,7 @@ export function NodeEvolution() {
                       ))}
                       {snapshots.length > 5 && (
                         <p className="text-xs text-slate-500 text-center">
-                          +{snapshots.length - 5} snapshots anteriores
+                          +{snapshots.length - 5} capturas anteriores
                         </p>
                       )}
                     </div>
