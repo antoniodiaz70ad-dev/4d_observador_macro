@@ -318,18 +318,18 @@ function Scene3D() {
     const sumX = nodes.reduce((acc, n) => acc + n.x, 0) / nodes.length;
     const sumY = nodes.reduce((acc, n) => acc + n.y, 0) / nodes.length;
     const sumZ = nodes.reduce((acc, n) => acc + n.z, 0) / nodes.length;
-    return new BABYLON.Vector3(sumX, projectionMode === '2d' ? 0 : sumZ + 2.5, sumY);
+    return new BABYLON.Vector3(sumX, projectionMode === '2d' ? 0 : sumZ - 5, sumY);
   }, [projectionMode]);
 
 
   const calculateRadius = useCallback((nodes: NodeData[]) => {
-    if (nodes.length <= 1) return projectionMode === '2d' ? 78 : 96;
+    if (nodes.length <= 1) return projectionMode === '2d' ? 82 : 106;
     const center = calculateCenter(nodes);
     const farthest = nodes.reduce((maxDistance, node) => {
       const position = new BABYLON.Vector3(node.x, projectionMode === '2d' ? 0 : node.z, node.y);
       return Math.max(maxDistance, BABYLON.Vector3.Distance(center, position));
     }, 0);
-    return Math.max(projectionMode === '2d' ? 78 : 96, Math.min(190, farthest * 2.35 + 54));
+    return Math.max(projectionMode === '2d' ? 82 : 106, Math.min(190, farthest * 2.35 + 60));
   }, [calculateCenter, projectionMode]);
 
   const frameNodes = useCallback((nodes: NodeData[] = visibleNodes.length > 0 ? visibleNodes : nodesData) => {
