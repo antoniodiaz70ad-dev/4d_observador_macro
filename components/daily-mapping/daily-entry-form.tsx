@@ -17,6 +17,13 @@ interface DailyEntryFormProps {
   entryId?: string;
 }
 
+const toLocalDateInputValue = (value: Date | string = new Date()) => {
+  const date = value instanceof Date ? value : new Date(value);
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60 * 1000);
+  return local.toISOString().split('T')[0];
+};
+
 export function DailyEntryForm({ onSuccess, initialData, entryId }: DailyEntryFormProps) {
   const [loading, setLoading] = useState(false);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
@@ -25,7 +32,7 @@ export function DailyEntryForm({ onSuccess, initialData, entryId }: DailyEntryFo
   const [selectedIntentions, setSelectedIntentions] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: toLocalDateInputValue(),
     emotionalState: 5,
     energyLevel: 5,
     sleepQuality: 3,
@@ -38,7 +45,7 @@ export function DailyEntryForm({ onSuccess, initialData, entryId }: DailyEntryFo
   useEffect(() => {
     if (initialData) {
       setFormData({
-        date: new Date(initialData.date).toISOString().split('T')[0],
+        date: toLocalDateInputValue(initialData.date),
         emotionalState: initialData.emotionalState || 5,
         energyLevel: initialData.energyLevel || 5,
         sleepQuality: initialData.sleepQuality || 3,

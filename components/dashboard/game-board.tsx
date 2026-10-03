@@ -204,46 +204,8 @@ export default function GameBoard({ recentData }: GameBoardProps) {
 
     const newConnections: Connection[] = [];
 
-    // Ensure we have at least 5 example nodes if no real data
-    const ensureExampleNodes = () => {
-      if (generatedNodes.length < 6) {
-        const exampleNodes = [
-          { type: 'project' as const, label: 'Proyecto Quantum', category: 'spiritual', energy: 8, radius: 220 },
-          { type: 'relationship' as const, label: 'Colaboración Cósmica', category: 'relationship', energy: 7, radius: 380 },
-          { type: 'manifestation' as const, label: 'Logro Emergente', category: 'manifestation', energy: 9, radius: 160 },
-          { type: 'energy' as const, label: 'Energía Disponible', category: 'energy', energy: 6, radius: 280 },
-          { type: 'task' as const, label: 'Tareas Activas', category: 'task', energy: 7, radius: 200 }
-        ];
+    // No se agregan nodos demostrativos: el conteo debe reflejar datos reales del usuario.
 
-        exampleNodes.forEach((example, idx) => {
-          const angle = (idx / exampleNodes.length) * Math.PI * 2 + (Math.random() * 0.3);
-          const radius = example.radius + (Math.random() - 0.5) * 40;
-          
-          generatedNodes.push({
-            id: `example-${idx}`,
-            type: example.type,
-            x: Math.cos(angle) * radius,
-            y: Math.sin(angle) * radius,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: (Math.random() - 0.5) * 0.3,
-            label: example.label,
-            color: getNodeColor(example.type, example.category),
-            size: 18 + example.energy,
-            energy: example.energy,
-            category: example.category,
-            pulsePhase: Math.random() * Math.PI * 2
-          });
-
-          newConnections.push({
-            from: 'observer',
-            to: `example-${idx}`,
-            energy: example.energy,
-            animated: true,
-            flowSpeed: 1 + Math.random()
-          });
-        });
-      }
-    };
 
     // Process real projects
     projects.forEach((project: any, index: number) => {
@@ -334,9 +296,6 @@ export default function GameBoard({ recentData }: GameBoardProps) {
         flowSpeed: 1.8
       });
     });
-
-    // Ensure example nodes if needed
-    ensureExampleNodes();
 
     setNodes(generatedNodes);
     setConnections(newConnections);
@@ -1328,7 +1287,7 @@ export default function GameBoard({ recentData }: GameBoardProps) {
           <Activity className="h-4 w-4 text-purple-400" />
           <p className="text-slate-400">
             <span className="text-purple-300 font-medium">Vista Aérea Holográfica</span> • 
-            Arrastra para mover • Scroll para zoom • {nodes.length} nodos activos
+            Arrastra para mover • Scroll para zoom • {nodes.length} {nodes.length === 1 ? 'nodo real' : 'nodos reales'}
           </p>
         </div>
       </CardHeader>

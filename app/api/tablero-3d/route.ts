@@ -89,7 +89,7 @@ export async function GET() {
     const links: LinkData[] = [];
 
     // Nodo central: El Observador (usuario)
-    const observerEnergy = metrics?.overallCoherence ? metrics.overallCoherence / 100 : 0.75;
+    const observerEnergy = metrics?.overallCoherence ? metrics.overallCoherence / 100 : 0;
     nodes.push({
       id: 'observer',
       x: 0,
@@ -102,7 +102,7 @@ export async function GET() {
       type: 'self',
       metadata: {
         email: user?.email,
-        coherence: metrics?.overallCoherence || 75,
+        coherence: metrics?.overallCoherence || 0,
       },
     });
 

@@ -47,12 +47,11 @@ export function RevenueChart({ className }: RevenueChartProps) {
           const result = await response.json();
           setData(result.history || []);
         } else {
-          // Generar datos de ejemplo si no hay API
-          setData(generateSampleData(period));
+          setData([]);
         }
       } catch (error) {
         console.error('Error fetching revenue data:', error);
-        setData(generateSampleData(period));
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -104,6 +103,20 @@ export function RevenueChart({ className }: RevenueChartProps) {
           <div className="text-center">
             <Activity className="h-8 w-8 animate-pulse text-cyan-400 mx-auto mb-2" />
             <p className="text-slate-400 text-sm">Cargando gráficas...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <Card className={`bg-slate-900/70 border-slate-700 ${className}`}>
+        <CardContent className="flex h-80 items-center justify-center">
+          <div className="max-w-sm text-center">
+            <BarChart2 className="mx-auto mb-3 h-10 w-10 text-slate-500" />
+            <p className="font-semibold text-slate-200">Sin historial real de ingresos</p>
+            <p className="mt-2 text-sm text-slate-500">Conecta proyectos externos y registra decisiones para activar esta gráfica. No se muestran datos de ejemplo.</p>
           </div>
         </CardContent>
       </Card>
@@ -290,35 +303,4 @@ export function RevenueChart({ className }: RevenueChartProps) {
       </CardContent>
     </Card>
   );
-}
-
-// Función para generar datos de ejemplo
-function generateSampleData(period: '7d' | '30d' | '90d'): RevenueData[] {
-  const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
-  const data: RevenueData[] = [];
-  
-  const now = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-    
-    // Simular tendencia creciente con variación
-    const baseRevenue = 100 + (days - i) * 15;
-    const variation = Math.random() * 100 - 50;
-    const revenue = Math.max(0, baseRevenue + variation);
-    
-    const decisions = Math.floor(5 + Math.random() * 20);
-    
-    data.push({
-      date: date.toISOString().split('T')[0],
-      revenue: Math.round(revenue * 100) / 100,
-      decisions,
-      projects: {
-        'Legal Shield': Math.round(revenue * 0.6 * 100) / 100,
-        'Capital Miner': Math.round(revenue * 0.4 * 100) / 100,
-      },
-    });
-  }
-  
-  return data;
 }

@@ -394,7 +394,7 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
                 
                 <div className="flex items-center gap-4 mb-4">
                   <div className={`px-4 py-2 rounded-lg font-bold text-xl ${actionStyle.bg} ${actionStyle.text}`}>
-                    {data.globalRecommendation.action}
+                    {hasDecisionContext ? data.globalRecommendation.action : 'Sin evidencia'}
                   </div>
                   <ArrowRight className="w-5 h-5 text-slate-500" />
                   <p className="text-white font-medium">{data.globalRecommendation.target}</p>

@@ -351,6 +351,8 @@ export function OnboardingWizard({ onComplete, onSkip, initialStep = 0 }: Onboar
           {onSkip && currentStep < 4 && (
             <button
               onClick={onSkip}
+              aria-label="Cerrar bienvenida y continuar después"
+              title="Continuar después"
               className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors"
             >
               <X className="w-5 h-5" />

@@ -284,7 +284,7 @@ export default function EconomyViewPage() {
       </div>
 
       {/* Métricas flotantes - Izquierda */}
-      {data && (
+      {data && hasEconomyProjects && (
         <div className="absolute left-4 top-24 space-y-3 z-10">
           <div className="bg-black/70 backdrop-blur-sm border border-slate-700/50 rounded-lg p-3 min-w-[180px]">
             <div className="flex items-center gap-2 mb-1">
@@ -335,7 +335,7 @@ export default function EconomyViewPage() {
       )}
 
       {/* Stream de decisiones - Derecha */}
-      {data && showDecisionStream && (
+      {data && hasEconomyProjects && showDecisionStream && (
         <div className="absolute right-4 top-24 bottom-4 w-80 z-10">
           <div className="bg-black/70 backdrop-blur-sm border border-cyan-500/30 rounded-lg h-full flex flex-col">
             <div className="px-4 py-3 border-b border-cyan-500/20 flex items-center justify-between">
@@ -392,7 +392,7 @@ export default function EconomyViewPage() {
       )}
 
       {/* Botón para mostrar stream si está oculto */}
-      {!showDecisionStream && (
+      {hasEconomyProjects && !showDecisionStream && (
         <button
           onClick={() => setShowDecisionStream(true)}
           className="absolute right-4 top-24 bg-black/70 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-3 z-10"
@@ -402,6 +402,7 @@ export default function EconomyViewPage() {
       )}
 
       {/* Panel lateral de Analytics */}
+      {hasEconomyProjects && (
       <div className={`fixed top-0 right-0 h-full w-[500px] bg-slate-950/95 backdrop-blur-md border-l border-purple-500/30 z-40 transform transition-transform duration-300 ${showAnalytics ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="h-full overflow-y-auto p-6 space-y-6">
           <div className="flex items-center justify-between">
@@ -424,9 +425,10 @@ export default function EconomyViewPage() {
           <PredictionsPanel />
         </div>
       </div>
+      )}
 
       {/* Botón flotante para abrir Analytics */}
-      {!showAnalytics && (
+      {hasEconomyProjects && !showAnalytics && (
         <button
           onClick={() => setShowAnalytics(true)}
           className="fixed right-0 top-1/2 transform -translate-y-1/2 z-30 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-l-lg shadow-lg flex items-center gap-2 transition-all"
@@ -443,8 +445,9 @@ export default function EconomyViewPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowAnalytics(true)}
-            className={`${showAnalytics ? 'text-purple-400' : 'text-slate-400'} hover:text-white`}
+            onClick={() => hasEconomyProjects && setShowAnalytics(true)}
+            disabled={!hasEconomyProjects}
+            className={`${showAnalytics ? 'text-purple-400' : 'text-slate-400'} hover:text-white disabled:opacity-40`}
           >
             <BarChart2 className="h-4 w-4 mr-1" />
             Analytics

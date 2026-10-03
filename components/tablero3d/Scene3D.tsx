@@ -81,6 +81,13 @@ const EXAMPLE_NODES: NodeData[] = [
   { id: 'purpose', x: -5, y: -35, z: 39, size: 2.3, energy: 0.88, label: 'Propósito de Vida', color: '#ff44cc', type: 'manifestation' },
 ];
 
+
+const EMPTY_NODES: NodeData[] = [
+  { id: 'observer', x: 0, y: 0, z: 45, size: 3.5, energy: 0, label: 'Observador 4D', color: '#00ffff', type: 'self', metadata: { empty: true, coherence: 0 } },
+];
+
+const EMPTY_STATS = { total: 1, avgEnergy: 0, connections: 0, breakdown: { projects: 0, relationships: 0, intentions: 0, manifestations: 0 } };
+
 const EXAMPLE_LINKS: LinkData[] = [
   { source: 'observer', target: 'work', strength: 0.9 },
   { source: 'observer', target: 'family', strength: 0.95 },
@@ -204,15 +211,11 @@ function Scene3D() {
       
       if (!response.ok) {
         if (response.status === 401) {
-          // No autenticado, usar datos de ejemplo
-          console.log('Usuario no autenticado, usando datos de ejemplo');
-          setNodesData(EXAMPLE_NODES);
-          setLinksData(EXAMPLE_LINKS);
-          setStats({ 
-            total: EXAMPLE_NODES.length, 
-            avgEnergy: Math.round(EXAMPLE_NODES.reduce((a, n) => a + n.energy, 0) / EXAMPLE_NODES.length * 100),
-            connections: EXAMPLE_LINKS.length 
-          });
+          setNodesData(EMPTY_NODES);
+          setLinksData([]);
+          setStats(EMPTY_STATS);
+          setBreakdown(EMPTY_STATS.breakdown);
+          setSystemCoherence(0);
           setUsingRealData(false);
           return;
         }
@@ -233,28 +236,22 @@ function Scene3D() {
           setSystemCoherence(data.stats.coherence.overall / 100);
         }
       } else {
-        // Si no hay datos reales, usar datos de ejemplo
-        setNodesData(EXAMPLE_NODES);
-        setLinksData(EXAMPLE_LINKS);
-        setStats({ 
-          total: EXAMPLE_NODES.length, 
-          avgEnergy: Math.round(EXAMPLE_NODES.reduce((a, n) => a + n.energy, 0) / EXAMPLE_NODES.length * 100),
-          connections: EXAMPLE_LINKS.length 
-        });
+        setNodesData(EMPTY_NODES);
+        setLinksData([]);
+        setStats(EMPTY_STATS);
+        setBreakdown(EMPTY_STATS.breakdown);
+        setSystemCoherence(0);
         setUsingRealData(false);
       }
     } catch (err) {
       console.error('Error cargando datos:', err);
-      // Usar datos de ejemplo en caso de error
-      setNodesData(EXAMPLE_NODES);
-      setLinksData(EXAMPLE_LINKS);
-      setStats({ 
-        total: EXAMPLE_NODES.length, 
-        avgEnergy: Math.round(EXAMPLE_NODES.reduce((a, n) => a + n.energy, 0) / EXAMPLE_NODES.length * 100),
-        connections: EXAMPLE_LINKS.length 
-      });
+      setNodesData(EMPTY_NODES);
+      setLinksData([]);
+      setStats(EMPTY_STATS);
+      setBreakdown(EMPTY_STATS.breakdown);
+      setSystemCoherence(0);
       setUsingRealData(false);
-      setError('Usando datos de ejemplo');
+      setError('No se pudieron cargar datos reales');
     } finally {
       setLoading(false);
     }

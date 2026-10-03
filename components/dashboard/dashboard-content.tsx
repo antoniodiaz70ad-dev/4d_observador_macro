@@ -66,7 +66,8 @@ export function DashboardContent() {
         const response = await fetch('/api/user/onboarding');
         if (response.ok) {
           const data = await response.json();
-          if (!data.onboarding?.completed) {
+          const dismissed = typeof window !== 'undefined' && localStorage.getItem('observador4d:onboarding-dismissed') === 'true';
+          if (!data.onboarding?.completed && !dismissed) {
             setShowOnboarding(true);
           }
         }
@@ -235,7 +236,10 @@ export function DashboardContent() {
             setShowOnboarding(false);
             router.push('/tablero-3d');
           }}
-          onSkip={() => setShowOnboarding(false)}
+          onSkip={() => {
+            localStorage.setItem('observador4d:onboarding-dismissed', 'true');
+            setShowOnboarding(false);
+          }}
         />
       )}
 

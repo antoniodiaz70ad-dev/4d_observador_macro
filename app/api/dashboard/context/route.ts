@@ -200,8 +200,8 @@ export async function GET() {
 
     // Calcular globales
     const totalNodes = allNodes.length;
-    const globalCoh = totalNodes > 0 ? Math.round(totalCoh / totalNodes) : 50;
-    const globalEne = totalNodes > 0 ? Math.round(totalEne / totalNodes) : 50;
+    const globalCoh = totalNodes > 0 ? Math.round(totalCoh / totalNodes) : 0;
+    const globalEne = totalNodes > 0 ? Math.round(totalEne / totalNodes) : 0;
 
     // Identificar nodos críticos (coherencia < 40%)
     const critical = allNodes
@@ -239,7 +239,9 @@ export async function GET() {
 
     // Generar resumen compacto
     const globalStatus = getStatus(globalCoh);
-    const summary = `${totalNodes} nodos | Coherencia ${globalCoh}% (${globalStatus}) | Energía ${globalEne}% | ${critical.length} críticos | ${trendsUp}↑ ${trendsDown}↓`;
+    const summary = totalNodes > 0
+      ? `${totalNodes} nodos | Coherencia ${globalCoh}% (${globalStatus}) | Energía ${globalEne}% | ${critical.length} críticos | ${trendsUp}↑ ${trendsDown}↓`
+      : 'Sin nodos registrados | Registra un proyecto, relación o intención para calcular indicadores';
 
     const context: DashboardContext = {
       summary,

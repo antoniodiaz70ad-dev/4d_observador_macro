@@ -51,6 +51,40 @@ function metricText(state: MemoryState | null | undefined) {
   return typeof value === 'number' ? `${Math.round(value * 100)}%` : 'desconocido';
 }
 
+
+const attributeLabel = (key: string) => ({
+  status: 'Estado',
+  category: 'Categoría',
+  progress: 'Progreso',
+  energyInvested: 'Energía invertida',
+  impactLevel: 'Impacto',
+  metricRecorded: 'Métrica registrada',
+  coherence: 'Coherencia',
+  source: 'Fuente',
+  relationshipType: 'Tipo de relación',
+  importance: 'Importancia',
+  energyExchange: 'Intercambio de energía',
+  stage: 'Etapa',
+  timeframe: 'Horizonte temporal',
+  frequency: 'Frecuencia',
+  streak: 'Racha',
+  fulfilled: 'Días cumplidos',
+  expected: 'Días esperados',
+  latestBeforeQuery: 'Último dato antes de la consulta',
+  supported: 'Soportado por evidencia',
+  attributes: 'Atributos',
+  metrics: 'Métricas',
+  relations: 'Relaciones',
+}[key] || key.replace(/([A-Z])/g, ' $1').replace(/[-_]/g, ' ').replace(/^./, char => char.toUpperCase()));
+
+const attributeValue = (value: unknown) => {
+  if (value === true) return 'Sí';
+  if (value === false) return 'No';
+  if (value === null || value === undefined || value === '') return 'Sin dato';
+  if (typeof value === 'number') return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  return String(value);
+};
+
 export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { initialSnapshots?: MemorySnapshot[]; demo?: boolean }) {
   const [snapshots, setSnapshots] = useState<SnapshotRow[]>(rowsFromSnapshots(initialSnapshots));
   const [selectedId, setSelectedId] = useState(initialSnapshots[0]?.id ?? '');
@@ -425,8 +459,8 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
                 <dl className="mt-4 grid grid-cols-1 gap-2 text-sm">
                   {Object.entries(activeState?.attributes ?? {}).map(([key, value]) => (
                     <div key={key} className="grid grid-cols-[9rem_1fr] gap-2 border-b border-slate-800 py-1">
-                      <dt className="text-slate-400">{key}</dt>
-                      <dd>{String(value ?? 'desconocido')}</dd>
+                      <dt className="text-slate-400">{attributeLabel(key)}</dt>
+                      <dd>{attributeValue(value)}</dd>
                     </div>
                   ))}
                 </dl>
