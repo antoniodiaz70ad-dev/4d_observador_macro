@@ -8,7 +8,7 @@ import { Link3D } from './Link3D';
 import { Grid3D } from './Grid3D';
 import { Particles3D } from './Particles3D';
 import { Card } from '@/components/ui/card';
-import { X, Filter, Eye, Layers, Target, Sparkles, Users, Briefcase, Lightbulb, Loader2, RefreshCw, AlertCircle, TrendingUp, TrendingDown, Zap, ArrowRight, Brain, DollarSign, Orbit, Activity, Search, Maximize2, Network } from 'lucide-react';
+import { X, Filter, Layers, Target, Sparkles, Users, Briefcase, Lightbulb, Loader2, AlertCircle, TrendingUp, TrendingDown, Zap, ArrowRight, Brain, DollarSign, Orbit, Activity, Search, Maximize2, Network, Play, BarChart3 } from 'lucide-react';
 import { interpretNode, NodeInterpretation } from '@/lib/nodeInterpreter';
 
 // Modos de visualización
@@ -563,35 +563,82 @@ function Scene3D() {
     <>
       <canvas
         ref={canvasRef}
-        className="w-full h-full outline-none"
+        className="h-full w-full outline-none"
         style={{ touchAction: 'none' }}
       />
 
-      {/* Toggle de Modo de Vista - Superior Central */}
-      <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-black/80 backdrop-blur-md border border-slate-600/50 rounded-full p-1 flex items-center gap-1">
-          <button
-            onClick={() => setViewMode('coherence')}
-            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all text-sm font-medium ${
-              viewMode === 'coherence'
-                ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg'
-                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-            }`}
-          >
-            <Target className="h-4 w-4" />
-            Coherencia
-          </button>
-          <button
-            onClick={() => setViewMode('economy')}
-            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all text-sm font-medium ${
-              viewMode === 'economy'
-                ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg'
-                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-            }`}
-          >
-            <DollarSign className="h-4 w-4" />
-            Economía
-          </button>
+      {/* Encabezado estilo constelación */}
+      <div className="pointer-events-none absolute left-8 right-8 top-8 z-50 flex items-start justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-[0_0_22px_rgba(125,211,252,0.25)]">
+            Tu mapa, conectado
+          </h1>
+          <p className="mt-2 text-xl text-blue-200/85">
+            {stats.total} nodos · {stats.connections} conexiones
+          </p>
+        </div>
+
+        <div className="pointer-events-auto flex items-center gap-5">
+          <div className="relative w-80">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-200/70" />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar en tu mapa..."
+              className="h-14 w-full rounded-2xl border border-blue-200/20 bg-slate-950/45 pl-12 pr-10 text-sm text-white shadow-xl shadow-blue-950/20 outline-none backdrop-blur-xl placeholder:text-blue-200/55 focus:border-cyan-300/60"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-blue-200/60 hover:bg-white/10 hover:text-white"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+
+            {(searchResults.length > 0 || (normalizedSearch && searchResults.length === 0)) && (
+              <div className="absolute mt-3 w-full overflow-hidden rounded-2xl border border-blue-200/15 bg-slate-950/90 p-2 shadow-2xl shadow-blue-950/40 backdrop-blur-xl">
+                {searchResults.length > 0 ? (
+                  searchResults.map((node) => (
+                    <button
+                      key={node.id}
+                      onClick={() => focusNode(node)}
+                      className="w-full rounded-xl px-3 py-2 text-left hover:bg-cyan-400/10"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="truncate text-sm font-medium text-white">{node.label}</span>
+                        <span className="shrink-0 text-[10px] uppercase tracking-[0.18em] text-blue-200/55">
+                          {NODE_TYPES.find(t => t.id === node.type)?.label || node.type}
+                        </span>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <p className="px-3 py-2 text-sm text-blue-200/60">No encontré nodos con ese nombre.</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex h-14 items-center gap-1 rounded-2xl border border-blue-200/20 bg-slate-950/45 p-1 shadow-xl shadow-blue-950/20 backdrop-blur-xl">
+            <button
+              onClick={() => setProjectionMode('2d')}
+              className={`h-12 rounded-xl px-7 text-sm font-semibold transition-all ${projectionMode === '2d' ? 'bg-cyan-400/20 text-cyan-100 shadow-inner shadow-cyan-300/20' : 'text-blue-200/75 hover:text-white'}`}
+            >
+              2D
+            </button>
+            <button
+              onClick={() => setProjectionMode('3d')}
+              className={`h-12 rounded-xl px-7 text-sm font-semibold transition-all ${projectionMode === '3d' ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/35' : 'text-blue-200/75 hover:text-white'}`}
+            >
+              3D
+            </button>
+          </div>
+
+          <div className="rounded-full border border-cyan-200/25 bg-slate-950/35 px-5 py-2 text-sm font-medium text-cyan-100 shadow-xl shadow-cyan-950/20 backdrop-blur-xl">
+            Concepto visual
+          </div>
         </div>
       </div>
 
@@ -668,133 +715,44 @@ function Scene3D() {
         </div>
       )}
 
-      {/* Panel de Controles Superior Izquierdo */}
-      <div className="absolute top-24 left-6 z-50 space-y-3" style={{ marginTop: viewMode === 'economy' ? '60px' : '0' }}>
-        {/* Indicador de tipo de datos */}
-        <div className={`px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 ${
-          usingRealData 
-            ? 'bg-green-500/20 border border-green-500/50 text-green-300' 
-            : 'bg-yellow-500/20 border border-yellow-500/50 text-yellow-300'
-        }`}>
-          {usingRealData ? (
-            <>
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              Datos reales
-            </>
-          ) : (
-            <>
-              <AlertCircle className="w-3 h-3" />
-              Sin datos conectados
-            </>
-          )}
+      {/* Controles inferiores y memoria del mapa */}
+      <div className="pointer-events-none absolute bottom-8 left-8 right-[430px] z-50 space-y-5">
+        <div className="pointer-events-auto flex flex-wrap items-center gap-4">
           <button
-            onClick={loadData}
-            className="ml-2 p-1 hover:bg-white/10 rounded transition-colors"
-            title="Recargar datos"
+            onClick={() => frameNodes()}
+            className="flex h-14 items-center gap-3 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-6 text-sm font-medium text-white shadow-xl shadow-blue-950/25 backdrop-blur-xl hover:border-cyan-300/50 hover:bg-cyan-400/10"
           >
-            <RefreshCw className="w-3 h-3" />
+            <Maximize2 className="h-5 w-5 text-blue-100" />
+            Centrar mapa
+          </button>
+
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex h-14 items-center gap-3 rounded-2xl border px-6 text-sm font-medium shadow-xl shadow-blue-950/25 backdrop-blur-xl transition-all ${showFilters ? 'border-violet-300/50 bg-violet-500/25 text-white' : 'border-blue-200/20 bg-slate-950/55 text-blue-100 hover:border-violet-300/50 hover:bg-violet-400/10'}`}
+          >
+            <Filter className="h-5 w-5" />
+            Filtros
+          </button>
+
+          <div className="flex h-14 items-center gap-5 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-6 text-sm text-blue-100 shadow-xl shadow-blue-950/25 backdrop-blur-xl">
+            <span className="flex items-center gap-2"><span className="h-3.5 w-3.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />Tú</span>
+            <span className="flex items-center gap-2"><span className="h-3.5 w-3.5 rounded-full bg-violet-400 shadow-[0_0_12px_rgba(167,139,250,0.9)]" />Proyecto</span>
+            <span className="flex items-center gap-2"><span className="h-3.5 w-3.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(110,231,183,0.9)]" />Relación</span>
+          </div>
+
+          <button
+            onClick={() => setDebugMode(!debugMode)}
+            className="flex h-14 items-center gap-3 rounded-2xl border border-blue-200/20 bg-slate-950/55 px-6 text-sm font-medium text-blue-100 shadow-xl shadow-blue-950/25 backdrop-blur-xl hover:border-cyan-300/50 hover:bg-cyan-400/10"
+          >
+            <Network className="h-5 w-5" />
+            {debugMode ? 'Reducir alturas' : 'Resaltar alturas'}
           </button>
         </div>
 
-        {/* Navegación de constelación */}
-        <Card className="bg-black/85 backdrop-blur-md border-cyan-500/30 p-3 w-72 shadow-2xl">
-          <div className="flex items-center gap-2 mb-3">
-            <Search className="h-4 w-4 text-cyan-300" />
-            <p className="text-cyan-300 text-xs font-semibold uppercase tracking-wider">Buscar en el mapa</p>
-          </div>
-          <div className="relative">
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Proyecto, relación o intención"
-              className="w-full rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-2 pr-8 text-sm text-white placeholder:text-slate-500 outline-none focus:border-cyan-400"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="absolute right-2 top-2 text-slate-500 hover:text-white"
-                aria-label="Limpiar búsqueda"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          {searchResults.length > 0 && (
-            <div className="mt-2 max-h-44 overflow-y-auto space-y-1">
-              {searchResults.map((node) => (
-                <button
-                  key={node.id}
-                  onClick={() => focusNode(node)}
-                  className="w-full rounded-md border border-slate-800 bg-slate-900/70 px-3 py-2 text-left hover:border-cyan-500/60 hover:bg-cyan-950/30 transition-colors"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm text-white truncate">{node.label}</span>
-                    <span className="text-[10px] uppercase tracking-wide text-slate-500">
-                      {NODE_TYPES.find(t => t.id === node.type)?.label || node.type}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {normalizedSearch && searchResults.length === 0 && (
-            <p className="mt-2 text-xs text-slate-500">No encontré nodos con ese nombre.</p>
-          )}
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              onClick={() => frameNodes()}
-              className="flex items-center justify-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-medium text-cyan-200 hover:bg-cyan-500/20"
-            >
-              <Maximize2 className="h-3.5 w-3.5" />
-              Centrar
-            </button>
-            <button
-              onClick={() => setProjectionMode((mode) => mode === '3d' ? '2d' : '3d')}
-              className="flex items-center justify-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-xs font-medium text-purple-200 hover:bg-purple-500/20"
-            >
-              <Network className="h-3.5 w-3.5" />
-              Vista {projectionMode === '3d' ? '2D' : '3D'}
-            </button>
-          </div>
-
-          <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-            Selecciona un nodo para encuadrarlo, ver sus vínculos y decidir el siguiente paso.
-          </p>
-        </Card>
-
-        {/* Botón de profundidad */}
-        <button
-          onClick={() => setDebugMode(!debugMode)}
-          className={`px-5 py-2.5 rounded-lg font-semibold shadow-xl transition-all transform hover:scale-105 text-sm ${
-            debugMode
-              ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white border border-red-300'
-              : 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white border border-cyan-300/50 hover:from-cyan-600 hover:to-purple-700'
-          }`}
-        >
-          {debugMode ? 'Reducir alturas' : 'Resaltar alturas'}
-        </button>
-
-        {/* Botón de filtros */}
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`w-full px-5 py-2.5 rounded-lg font-semibold shadow-xl transition-all flex items-center justify-center gap-2 text-sm ${
-            showFilters
-              ? 'bg-purple-600 text-white border border-purple-400'
-              : 'bg-black/70 backdrop-blur-sm text-slate-200 border border-slate-600 hover:bg-slate-800'
-          }`}
-        >
-          <Filter className="h-4 w-4" />
-          Filtrar mapa
-        </button>
-
-        {/* Panel de Filtros */}
         {showFilters && (
-          <Card className="bg-black/90 backdrop-blur-md border-purple-500/50 p-4 shadow-2xl">
-            <p className="text-purple-300 text-xs font-semibold mb-3 uppercase tracking-wider">Tipos de elemento</p>
-            <div className="space-y-2">
+          <Card className="pointer-events-auto w-80 border-blue-200/20 bg-slate-950/85 p-4 shadow-2xl shadow-blue-950/40 backdrop-blur-xl">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-blue-200/70">Tipos de elemento</p>
+            <div className="grid grid-cols-2 gap-2">
               {NODE_TYPES.map((type) => {
                 const Icon = type.icon;
                 const isActive = activeFilter === type.id;
@@ -802,15 +760,12 @@ function Scene3D() {
                   <button
                     key={type.id}
                     onClick={() => setActiveFilter(type.id)}
-                    className={`w-full px-3 py-2 rounded-lg flex items-center gap-3 transition-all text-sm ${
-                      isActive
-                        ? 'bg-purple-500/30 border border-purple-400/50 text-white'
-                        : 'bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-slate-700/50'
-                    }`}
+                    className={`rounded-xl border px-3 py-2 text-left text-sm transition-all ${isActive ? 'border-cyan-300/50 bg-cyan-400/15 text-white' : 'border-blue-200/10 bg-white/[0.03] text-blue-100/75 hover:bg-white/[0.07]'}`}
                   >
-                    <Icon className="h-4 w-4" style={{ color: type.color }} />
-                    <span>{type.label}</span>
-                    {isActive && <Eye className="h-3 w-3 ml-auto text-purple-400" />}
+                    <span className="flex items-center gap-2">
+                      <Icon className="h-4 w-4" style={{ color: type.color }} />
+                      {type.label}
+                    </span>
                   </button>
                 );
               })}
@@ -818,87 +773,39 @@ function Scene3D() {
           </Card>
         )}
 
-        {/* Estadísticas */}
-        <Card className="bg-black/80 backdrop-blur-md border-cyan-500/30 p-4">
-          <p className="text-cyan-400 text-xs font-semibold mb-3 uppercase tracking-wider">Estadísticas</p>
-          <div className="grid grid-cols-3 gap-3 text-center mb-3">
-            <div>
-              <p className="text-2xl font-bold text-white">{stats.total}</p>
-              <p className="text-xs text-slate-400">Nodos</p>
+        <Card className="pointer-events-auto border-blue-200/20 bg-slate-950/55 p-5 shadow-2xl shadow-blue-950/30 backdrop-blur-xl">
+          <div className="flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/20 bg-blue-400/10">
+              <Layers className="h-7 w-7 text-blue-100" />
             </div>
-            <div>
-              <p className="text-2xl font-bold text-cyan-400">{stats.avgEnergy}%</p>
-              <p className="text-xs text-slate-400">Energía</p>
+            <div className="w-72">
+              <p className="text-lg font-semibold text-white">Memoria del mapa</p>
+              <p className="text-sm text-blue-200/70">Selecciona dos capturas para comparar</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-400">{stats.connections}</p>
-              <p className="text-xs text-slate-400">Vínculos</p>
+            <div className="hidden flex-1 items-center gap-4 lg:flex">
+              {['12 ene 2025', '02 feb 2025', '16 mar 2025', 'Hoy'].map((label, index) => (
+                <div key={label} className="flex flex-1 items-center gap-4">
+                  <div className={`h-3 w-3 rounded-full border ${index === 3 ? 'border-violet-300 bg-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.9)]' : 'border-blue-200/70 bg-slate-950'}`} />
+                  {index < 3 && <div className="h-px flex-1 bg-blue-200/25" />}
+                  <span className="absolute mt-12 -translate-x-8 text-xs text-blue-200/65">{label}</span>
+                </div>
+              ))}
             </div>
-          </div>
-          {/* Breakdown por tipo */}
-          {Object.keys(breakdown).length > 0 && (
-            <div className="pt-3 border-t border-slate-700/50">
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {breakdown.projects !== undefined && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-[#ff00ff]" />
-                    <span className="text-slate-400">{breakdown.projects} proyectos</span>
-                  </div>
-                )}
-                {breakdown.relationships !== undefined && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-[#ffaa00]" />
-                    <span className="text-slate-400">{breakdown.relationships} relaciones</span>
-                  </div>
-                )}
-                {breakdown.intentions !== undefined && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-[#00ff88]" />
-                    <span className="text-slate-400">{breakdown.intentions} intenciones</span>
-                  </div>
-                )}
-                {breakdown.manifestations !== undefined && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-[#ff0088]" />
-                    <span className="text-slate-400">{breakdown.manifestations} manifest.</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {debugMode && (
-          <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
-            <p className="text-red-300 text-xs font-bold text-center">
-              🔍 MODO DEBUG ACTIVO
-            </p>
-            <p className="text-slate-300 text-xs text-center mt-1">
-              Alturas ampliadas para ver diferencias
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Leyenda de Colores - Esquina Superior Derecha (debajo del panel de info) */}
-      <div className="absolute top-[420px] right-6 z-30">
-        <Card className="bg-black/80 backdrop-blur-md border-slate-600/50 p-3">
-          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wider">Leyenda</p>
-          <div className="space-y-1.5">
-            {NODE_TYPES.filter(t => t.id !== 'all').map((type) => (
-              <div key={type.id} className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: type.color, boxShadow: `0 0 8px ${type.color}` }} />
-                <span className="text-xs text-slate-300">{type.label}</span>
-              </div>
-            ))}
+            <button className="ml-auto flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/30 bg-slate-950/50 text-blue-100 hover:bg-blue-400/10" aria-label="Reproducir evolución">
+              <Play className="h-5 w-5 fill-current" />
+            </button>
+            <button className="flex h-14 items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-violet-500 px-6 text-sm font-semibold text-white shadow-lg shadow-violet-500/25">
+              <BarChart3 className="h-5 w-5" />
+              Comparar capturas
+            </button>
           </div>
         </Card>
       </div>
 
       {/* Panel de información del nodo seleccionado - MOTOR DE SIGNIFICADO */}
       {selectedNode && nodeInterpretation && (
-        <div className="absolute top-20 right-6 z-40 w-96 animate-in slide-in-from-right">
-          <Card className="bg-black/95 backdrop-blur-md border-cyan-500/50 p-6 shadow-2xl shadow-cyan-500/20">
+        <div className="absolute right-8 top-36 z-40 w-[390px] animate-in slide-in-from-right">
+          <Card className="border-blue-200/20 bg-slate-950/70 p-6 shadow-2xl shadow-blue-950/40 backdrop-blur-2xl">
             {/* Header con estado */}
             <div className="flex items-start justify-between mb-4">
               <div>
