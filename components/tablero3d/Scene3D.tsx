@@ -156,6 +156,7 @@ function Scene3D() {
   const [breakdown, setBreakdown] = useState<Record<string, number>>({});
   const [timelineSnapshots, setTimelineSnapshots] = useState<Array<{ id: string; nodeLabel: string; createdAt: string }>>([]);
   const [selectedSnapshotIds, setSelectedSnapshotIds] = useState<string[]>([]);
+  const visualReferenceMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('visual') === 'reference';
   
   // Modo de visualización: coherencia (nodos normales) o economía (sistema solar)
   const [viewMode, setViewMode] = useState<ViewMode>('coherence');
@@ -283,7 +284,7 @@ function Scene3D() {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'Sin fecha';
     return `${date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })} · ${date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`;
-  }, []);
+  }, [visualReferenceMode]);
 
 
   const toggleSnapshotSelection = useCallback((snapshotId: string) => {
@@ -359,7 +360,6 @@ function Scene3D() {
     setError(null);
     
     try {
-      const visualReferenceMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('visual') === 'reference';
       if (visualReferenceMode) {
         setNodesData(VISUAL_REFERENCE_NODES);
         setLinksData(VISUAL_REFERENCE_LINKS);
@@ -571,7 +571,7 @@ function Scene3D() {
       new BABYLON.Vector3(0.5, -1, 0.3),
       scene
     );
-    light2.intensity = 1.18;
+    light2.intensity = 0.68;
     light2.position = new BABYLON.Vector3(30, 80, 30);
 
     // Shadow generator
