@@ -66,6 +66,28 @@ export function DashboardContent() {
 
   // Verificar estado del onboarding
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const focus = params.get('focus');
+    if (!focus) return;
+
+    const targetByFocus: Record<string, string> = {
+      projects: 'projects-panel',
+      relationships: 'relationships-map',
+      timeline: 'timeline-viewer',
+    };
+
+    const target = targetByFocus[focus];
+    if (!target) return;
+
+    const timer = window.setTimeout(() => {
+      scrollToSection(target);
+      window.history.replaceState(null, '', '/dashboard');
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const checkOnboarding = async () => {
       try {
         const response = await fetch('/api/user/onboarding');

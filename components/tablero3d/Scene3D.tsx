@@ -87,7 +87,7 @@ const EMPTY_NODES: NodeData[] = [
   { id: 'observer', x: 0, y: 0, z: 45, size: 3.5, energy: 0, label: 'Observador 4D', color: '#00ffff', type: 'self', metadata: { empty: true, coherence: 0 } },
 ];
 
-const EMPTY_STATS = { total: 1, avgEnergy: 0, connections: 0, breakdown: { projects: 0, relationships: 0, intentions: 0, manifestations: 0 } };
+const EMPTY_STATS: APIResponse['stats'] = { total: 1, avgEnergy: 0, connections: 0, breakdown: { projects: 0, relationships: 0, intentions: 0, manifestations: 0 }, signals: { projects: 0, relationships: 0, dailyEntries: 0, sufficient: false } };
 
 const EXAMPLE_LINKS: LinkData[] = [
   { source: 'observer', target: 'work', strength: 0.9 },
@@ -122,11 +122,12 @@ function Scene3D() {
   const [projectionMode, setProjectionMode] = useState<ProjectionMode>('3d');
   const [nodesData, setNodesData] = useState<NodeData[]>([]);
   const [linksData, setLinksData] = useState<LinkData[]>([]);
-  const [stats, setStats] = useState({ total: 0, avgEnergy: 0, connections: 0 });
+  const [stats, setStats] = useState<APIResponse['stats']>({ total: 0, avgEnergy: 0, connections: 0, signals: { projects: 0, relationships: 0, dailyEntries: 0, sufficient: false } });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usingRealData, setUsingRealData] = useState(false);
   const [breakdown, setBreakdown] = useState<Record<string, number>>({});
+  const [timelineSnapshots, setTimelineSnapshots] = useState<Array<{ id: string; nodeLabel: string; createdAt: string }>>([]);
   
   // Modo de visualización: coherencia (nodos normales) o economía (sistema solar)
   const [viewMode, setViewMode] = useState<ViewMode>('coherence');
@@ -190,7 +191,7 @@ function Scene3D() {
   const nodeInterpretation = useMemo<NodeInterpretation | null>(() => {
     if (!selectedNode || nodesData.length === 0) return null;
     return interpretNode(
-      { ...selectedNode, coherence: selectedNode.metadata?.coherence },
+      { ...selectedNode, coherence: selectedNode.coherence ?? selectedNode.metadata?.coherence },
       linksData,
       systemCoherence
     );
@@ -238,6 +239,32 @@ function Scene3D() {
     const date = new Date(rawDate);
     if (Number.isNaN(date.getTime())) return null;
     return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+  }, [selectedNode]);
+
+
+  const hasSufficientEvidence = Boolean(stats.signals?.sufficient);
+  const missingEvidence = useMemo(() => {
+    const missing: string[] = [];
+    if (!stats.signals?.projects) missing.push('proyecto');
+    if (!stats.signals?.relationships) missing.push('relación');
+    if (!stats.signals?.dailyEntries) missing.push('registro diario');
+    return missing;
+  }, [stats.signals]);
+
+  const formatSnapshotDate = useCallback((value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Sin fecha';
+    return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+  }, []);
+
+
+  const selectedSourceEnergy = selectedNode ? Math.round((selectedNode.energy || 0) * 100) : 0;
+  const selectedSourceCoherence = useMemo(() => {
+    if (!selectedNode) return 0;
+    const raw = selectedNode.coherence ?? selectedNode.metadata?.coherence ?? 0;
+    const numeric = typeof raw === 'number' ? raw : Number(raw);
+    if (Number.isNaN(numeric)) return 0;
+    return Math.round(numeric <= 1 ? numeric * 100 : numeric);
   }, [selectedNode]);
 
   // Calcular centro de los nodos para centrar la cámara
@@ -342,6 +369,28 @@ function Scene3D() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadTimelineSnapshots = async () => {
+      try {
+        const response = await fetch('/api/timeline/snapshots?days=365&limit=8');
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!cancelled) {
+          setTimelineSnapshots((data.snapshots || []).slice(-4));
+        }
+      } catch (error) {
+        console.error('Error cargando capturas del mapa:', error);
+      }
+    };
+
+    loadTimelineSnapshots();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Cargar datos de economía cuando se cambia al modo economía
   const loadEconomyData = useCallback(async () => {
@@ -574,7 +623,7 @@ function Scene3D() {
             Tu mapa, conectado
           </h1>
           <p className="mt-2 text-xl text-blue-200/85">
-            {stats.total} nodos · {stats.connections} conexiones
+            {stats.total} nodos · {stats.connections} vínculos
           </p>
         </div>
 
@@ -780,50 +829,58 @@ function Scene3D() {
             </div>
             <div className="w-72">
               <p className="text-lg font-semibold text-white">Memoria del mapa</p>
-              <p className="text-sm text-blue-200/70">Selecciona dos capturas para comparar</p>
+              <p className="text-sm text-blue-200/70">{timelineSnapshots.length > 1 ? 'Selecciona dos capturas para comparar' : 'Las capturas aparecerán cuando cambie tu mapa'}</p>
             </div>
             <div className="hidden flex-1 items-center gap-4 lg:flex">
-              {['12 ene 2025', '02 feb 2025', '16 mar 2025', 'Hoy'].map((label, index) => (
-                <div key={label} className="flex flex-1 items-center gap-4">
-                  <div className={`h-3 w-3 rounded-full border ${index === 3 ? 'border-violet-300 bg-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.9)]' : 'border-blue-200/70 bg-slate-950'}`} />
-                  {index < 3 && <div className="h-px flex-1 bg-blue-200/25" />}
-                  <span className="absolute mt-12 -translate-x-8 text-xs text-blue-200/65">{label}</span>
+              {(timelineSnapshots.length > 0 ? timelineSnapshots : [{ id: 'empty', nodeLabel: 'Sin capturas', createdAt: new Date().toISOString() }]).map((snapshot, index, list) => (
+                <div key={snapshot.id} className="flex flex-1 items-center gap-4">
+                  <div className={`h-3 w-3 rounded-full border ${index === list.length - 1 && timelineSnapshots.length > 0 ? 'border-violet-300 bg-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.9)]' : 'border-blue-200/70 bg-slate-950'}`} />
+                  {index < list.length - 1 && <div className="h-px flex-1 bg-blue-200/25" />}
+                  <span className="absolute mt-12 max-w-24 -translate-x-8 truncate text-xs text-blue-200/65">
+                    {timelineSnapshots.length > 0 ? formatSnapshotDate(snapshot.createdAt) : 'Sin capturas'}
+                  </span>
                 </div>
               ))}
             </div>
-            <button className="ml-auto flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/30 bg-slate-950/50 text-blue-100 hover:bg-blue-400/10" aria-label="Reproducir evolución">
+            <button disabled={timelineSnapshots.length < 2} title={timelineSnapshots.length < 2 ? 'Necesitas al menos dos capturas reales para reproducir la evolución.' : 'Reproducir evolución'} className="ml-auto flex h-14 w-14 items-center justify-center rounded-full border border-blue-200/30 bg-slate-950/50 text-blue-100 hover:bg-blue-400/10 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-slate-950/50" aria-label="Reproducir evolución">
               <Play className="h-5 w-5 fill-current" />
             </button>
-            <button className="flex h-14 items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-violet-500 px-6 text-sm font-semibold text-white shadow-lg shadow-violet-500/25">
+            <button disabled={timelineSnapshots.length < 2} title={timelineSnapshots.length < 2 ? 'Necesitas al menos dos capturas reales para comparar.' : 'Comparar capturas'} className="flex h-14 items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-violet-500 px-6 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 disabled:cursor-not-allowed disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:shadow-none">
               <BarChart3 className="h-5 w-5" />
-              Comparar capturas
+              {timelineSnapshots.length < 2 ? 'Sin comparación' : 'Comparar capturas'}
             </button>
           </div>
         </Card>
       </div>
 
       {/* Panel de información del nodo seleccionado - MOTOR DE SIGNIFICADO */}
-      {selectedNode && nodeInterpretation && (
-        <div className="absolute right-8 top-36 z-40 w-[390px] animate-in slide-in-from-right">
+      {selectedNode && (
+        <div className="absolute right-20 top-36 z-40 w-[360px] max-h-[calc(100vh-11rem)] animate-in slide-in-from-right overflow-y-auto pr-1">
           <Card className="border-blue-200/20 bg-slate-950/70 p-6 shadow-2xl shadow-blue-950/40 backdrop-blur-2xl">
             {/* Header con estado */}
             <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl">{nodeInterpretation.statusEmoji}</span>
+                  <span className="text-2xl">{hasSufficientEvidence && nodeInterpretation ? nodeInterpretation.statusEmoji : '◌'}</span>
                   <h3 className="text-xl font-bold text-white">{selectedNode.label}</h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div 
-                    className="px-2 py-0.5 rounded-full text-xs font-bold"
-                    style={{ 
-                      backgroundColor: `${nodeInterpretation.statusColor}20`,
-                      color: nodeInterpretation.statusColor,
-                      border: `1px solid ${nodeInterpretation.statusColor}50`
-                    }}
-                  >
-                    {nodeInterpretation.statusLabel}
-                  </div>
+                  {hasSufficientEvidence && nodeInterpretation ? (
+                    <div
+                      className="px-2 py-0.5 rounded-full text-xs font-bold"
+                      style={{
+                        backgroundColor: `${nodeInterpretation.statusColor}20`,
+                        color: nodeInterpretation.statusColor,
+                        border: `1px solid ${nodeInterpretation.statusColor}50`
+                      }}
+                    >
+                      {nodeInterpretation.statusLabel}
+                    </div>
+                  ) : (
+                    <div className="rounded-full border border-amber-300/40 bg-amber-400/10 px-2 py-0.5 text-xs font-bold text-amber-200">
+                      Sin evidencia suficiente
+                    </div>
+                  )}
                   <p className="text-xs text-slate-400 uppercase tracking-wider">
                     {NODE_TYPES.find(t => t.id === selectedNode.type)?.label || selectedNode.type}
                   </p>
@@ -846,16 +903,16 @@ function Scene3D() {
                 </div>
                 <div className="flex items-end gap-1">
                   <span className="text-2xl font-bold text-white">
-                    {(nodeInterpretation.metrics.energy * 100).toFixed(0)}
+                    {hasSufficientEvidence && nodeInterpretation ? (nodeInterpretation.metrics.energy * 100).toFixed(0) : '—'}
                   </span>
-                  <span className="text-xs text-slate-500 mb-1">%</span>
+                  <span className="text-xs text-slate-500 mb-1">{hasSufficientEvidence && nodeInterpretation ? '%' : ''}</span>
                 </div>
                 <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ 
-                      width: `${nodeInterpretation.metrics.energy * 100}%`,
-                      backgroundColor: nodeInterpretation.statusColor
+                      width: hasSufficientEvidence && nodeInterpretation ? `${nodeInterpretation.metrics.energy * 100}%` : '0%',
+                      backgroundColor: hasSufficientEvidence && nodeInterpretation ? nodeInterpretation.statusColor : '#64748b'
                     }}
                   />
                 </div>
@@ -864,7 +921,7 @@ function Scene3D() {
               <div className="bg-slate-900/50 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-slate-400">Coherencia</span>
-                  {nodeInterpretation.metrics.coherence >= 0.6 ? (
+                  {hasSufficientEvidence && nodeInterpretation && nodeInterpretation.metrics.coherence >= 0.6 ? (
                     <TrendingUp className="w-3 h-3 text-green-400" />
                   ) : (
                     <TrendingDown className="w-3 h-3 text-red-400" />
@@ -872,16 +929,16 @@ function Scene3D() {
                 </div>
                 <div className="flex items-end gap-1">
                   <span className="text-2xl font-bold text-white">
-                    {(nodeInterpretation.metrics.coherence * 100).toFixed(0)}
+                    {hasSufficientEvidence && nodeInterpretation ? (nodeInterpretation.metrics.coherence * 100).toFixed(0) : '—'}
                   </span>
-                  <span className="text-xs text-slate-500 mb-1">%</span>
+                  <span className="text-xs text-slate-500 mb-1">{hasSufficientEvidence && nodeInterpretation ? '%' : ''}</span>
                 </div>
                 <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ 
-                      width: `${nodeInterpretation.metrics.coherence * 100}%`,
-                      backgroundColor: nodeInterpretation.metrics.coherence >= 0.6 ? '#00FF88' : '#FF4500'
+                      width: hasSufficientEvidence && nodeInterpretation ? `${nodeInterpretation.metrics.coherence * 100}%` : '0%',
+                      backgroundColor: hasSufficientEvidence && nodeInterpretation && nodeInterpretation.metrics.coherence >= 0.6 ? '#00FF88' : '#64748b'
                     }}
                   />
                 </div>
@@ -892,21 +949,43 @@ function Scene3D() {
             <div className="grid grid-cols-3 gap-2 mb-4 text-center">
               <div className="bg-slate-900/30 rounded-lg p-2">
                 <p className="text-xs text-slate-500">Conexiones</p>
-                <p className="text-lg font-bold text-cyan-400">{nodeInterpretation.metrics.connections}</p>
+                <p className="text-lg font-bold text-cyan-400">{selectedConnections.length}</p>
               </div>
               <div className="bg-slate-900/30 rounded-lg p-2">
                 <p className="text-xs text-slate-500">Fuerza</p>
                 <p className="text-lg font-bold text-purple-400">
-                  {(nodeInterpretation.metrics.avgLinkStrength * 100).toFixed(0)}%
+                  {hasSufficientEvidence && nodeInterpretation ? `${(nodeInterpretation.metrics.avgLinkStrength * 100).toFixed(0)}%` : '—'}
                 </p>
               </div>
               <div className="bg-slate-900/30 rounded-lg p-2">
                 <p className="text-xs text-slate-500">Score</p>
                 <p className="text-lg font-bold text-white">
-                  {nodeInterpretation.metrics.score.toFixed(1)}
+                  {hasSufficientEvidence && nodeInterpretation ? nodeInterpretation.metrics.score.toFixed(1) : '—'}
                 </p>
               </div>
             </div>
+
+            {!hasSufficientEvidence && (
+              <div className="mb-4 rounded-lg border border-amber-300/30 bg-amber-400/10 p-3">
+                <p className="text-sm font-semibold text-amber-100">Sin evidencia para diagnóstico</p>
+                <p className="mt-1 text-xs leading-relaxed text-amber-100/75">
+                  Falta {missingEvidence.join(', ') || 'información'} para activar estado, urgencia y recomendación. Estos valores se muestran solo como fuente del mapa, no como lectura final.
+                </p>
+              </div>
+            )}
+
+            {!hasSufficientEvidence && (
+              <div className="mb-4 grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-slate-900/40 p-3">
+                  <p className="text-xs text-slate-500">Valor fuente de energía</p>
+                  <p className="mt-1 text-lg font-bold text-cyan-200">{selectedSourceEnergy}%</p>
+                </div>
+                <div className="rounded-lg bg-slate-900/40 p-3">
+                  <p className="text-xs text-slate-500">Valor fuente de coherencia</p>
+                  <p className="mt-1 text-lg font-bold text-violet-200">{selectedSourceCoherence}%</p>
+                </div>
+              </div>
+            )}
 
             {/* Contexto y vínculos del nodo */}
             <div className="mb-4 rounded-lg border border-slate-700/70 bg-slate-950/60 p-3">
@@ -916,6 +995,9 @@ function Scene3D() {
                   <p className="text-sm text-slate-300">
                     Último cambio: {selectedLastChange || 'sin fecha registrada'}
                   </p>
+                  {selectedNode.metadata?.source && (
+                    <p className="mt-1 text-xs leading-relaxed text-slate-500">Fuente: {selectedNode.metadata.source}</p>
+                  )}
                 </div>
                 <button
                   onClick={() => focusNode(selectedNode)}
@@ -958,6 +1040,8 @@ function Scene3D() {
               </div>
             </div>
 
+            {hasSufficientEvidence && nodeInterpretation && (
+            <>
             {/* Recomendación - MOTOR DE SIGNIFICADO */}
             <div 
               className="rounded-lg p-4 mb-4"
@@ -1055,6 +1139,8 @@ function Scene3D() {
                 </div>
               )}
             </div>
+            </>
+            )}
           </Card>
         </div>
       )}

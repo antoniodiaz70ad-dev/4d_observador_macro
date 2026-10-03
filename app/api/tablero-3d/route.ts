@@ -13,6 +13,7 @@ interface NodeData {
   label: string;
   color: string;
   type: 'self' | 'project' | 'relationship' | 'intention' | 'manifestation';
+  coherence?: number;
   metadata?: Record<string, any>;
 }
 
@@ -24,9 +25,9 @@ interface LinkData {
 
 // Colores por tipo
 const TYPE_COLORS = {
-  self: '#00ffff',
-  project: '#ff00ff',
-  relationship: '#ffaa00',
+  self: '#67e8f9',
+  project: '#8b5cf6',
+  relationship: '#6ee7b7',
   intention: '#00ff88',
   manifestation: '#ff0088',
 };
@@ -54,7 +55,7 @@ export async function GET() {
     const userId = session.user.id;
 
     // Obtener datos del usuario en paralelo
-    const [user, projects, relationships, intentions, manifestations, metrics] = await Promise.all([
+    const [user, projects, relationships, intentions, manifestations, metrics, dailyEntriesCount] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
         select: { id: true, name: true, email: true },
@@ -83,6 +84,7 @@ export async function GET() {
         where: { userId },
         orderBy: { date: 'desc' },
       }),
+      prisma.dailyEntry.count({ where: { userId } }),
     ]);
 
     const nodes: NodeData[] = [];
@@ -97,12 +99,15 @@ export async function GET() {
       z: 60, // Altura máxima
       size: 4.0,
       energy: observerEnergy,
+      coherence: observerEnergy,
       label: user?.name || 'Observador 4D',
       color: TYPE_COLORS.self,
       type: 'self',
       metadata: {
         email: user?.email,
         coherence: metrics?.overallCoherence || 0,
+        source: metrics ? `Coherencia general ${metrics.overallCoherence}%` : 'Sin métricas suficientes',
+        updatedAt: metrics?.date?.toISOString(),
       },
     });
 
@@ -110,7 +115,8 @@ export async function GET() {
     const projectRadius = 25;
     projects.forEach((project, index) => {
       const pos = distributeInCircle(index, Math.max(projects.length, 1), projectRadius);
-      const energy = (project.progress / 100 + (project.energyInvested / 10)) / 2;
+      const energy = project.energyInvested / 10;
+      const coherence = ((project.progress || 0) / 100 + (project.satisfactionLevel || 5) / 10) / 2;
       const height = 20 + (project.progress / 100) * 30; // Altura basada en progreso
       
       nodes.push({
@@ -119,7 +125,8 @@ export async function GET() {
         y: pos.y,
         z: height,
         size: 1.8 + (project.progress / 100) * 1.2,
-        energy: Math.min(1, Math.max(0.1, energy)),
+        energy: Math.min(1, Math.max(0, energy)),
+        coherence: Math.min(1, Math.max(0, coherence)),
         label: project.name,
         color: TYPE_COLORS.project,
         type: 'project',
@@ -127,6 +134,11 @@ export async function GET() {
           status: project.status,
           progress: project.progress,
           category: project.category,
+          energyInvested: project.energyInvested,
+          impactLevel: project.impactLevel,
+          satisfactionLevel: project.satisfactionLevel,
+          source: `Energía dedicada ${project.energyInvested}/10; coherencia calculada con progreso ${project.progress}% y satisfacción ${project.satisfactionLevel}/10`,
+          updatedAt: project.updatedAt?.toISOString(),
         },
       });
 
@@ -151,7 +163,8 @@ export async function GET() {
         y: pos.y,
         z: height,
         size: 1.6 + (rel.connectionQuality / 10) * 1.4,
-        energy: Math.min(1, Math.max(0.1, energy)),
+        energy: Math.min(1, Math.max(0, energy)),
+        coherence: Math.min(1, Math.max(0, energy)),
         label: rel.name,
         color: TYPE_COLORS.relationship,
         type: 'relationship',
@@ -160,6 +173,8 @@ export async function GET() {
           quality: rel.connectionQuality,
           energyExchange: rel.energyExchange,
           importance: rel.importance,
+          source: `Calidad de conexión ${rel.connectionQuality}/10`,
+          updatedAt: rel.updatedAt?.toISOString(),
         },
       });
 
@@ -280,6 +295,12 @@ export async function GET() {
         emotional: metrics?.emotionalCoherence || 0,
         logical: metrics?.logicalCoherence || 0,
         energetic: metrics?.energeticCoherence || 0,
+      },
+      signals: {
+        projects: projects.length,
+        relationships: relationships.length,
+        dailyEntries: dailyEntriesCount,
+        sufficient: projects.length > 0 && relationships.length > 0 && dailyEntriesCount > 0,
       },
     };
 

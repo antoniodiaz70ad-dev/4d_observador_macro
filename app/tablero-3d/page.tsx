@@ -22,9 +22,9 @@ const Scene3D = dynamic(() => import('@/components/tablero3d/Scene3D').then((mod
 
 const NAV_ITEMS = [
   { label: 'Inicio', href: '/dashboard', icon: Home },
-  { label: 'Registro diario', href: '/registro-diario', icon: NotebookText },
-  { label: 'Proyectos', href: '/projects', icon: Cuboid },
-  { label: 'Relaciones', href: '/relationships', icon: Link2 },
+  { label: 'Registro diario', href: '/daily-mapping', icon: NotebookText },
+  { label: 'Proyectos', href: '/dashboard?focus=projects', icon: Cuboid },
+  { label: 'Relaciones', href: '/dashboard?focus=relationships', icon: Link2 },
   { label: 'Mapa 3D', href: '/tablero-3d', icon: Network, active: true },
   { label: 'Historial', href: '/memoria-4d', icon: CalendarDays },
   { label: 'Integraciones', href: '/projects-hub', icon: PlugZap },

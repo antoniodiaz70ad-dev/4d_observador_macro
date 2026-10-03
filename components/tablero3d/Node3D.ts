@@ -13,6 +13,7 @@ export interface NodeData {
   color: string;
   type: string;
   coherence?: number;
+  metadata?: Record<string, any>;
 }
 
 export class Node3D {
@@ -98,6 +99,53 @@ export class Node3D {
     coreMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
     coreMat.alpha = 0.9;
     core.material = coreMat;
+
+    // Etiqueta persistente del nodo
+    const labelWidth = 512;
+    const labelHeight = 128;
+    const labelTexture = new BABYLON.DynamicTexture(`${nodeData.id}_label_texture`, { width: labelWidth, height: labelHeight }, scene, true);
+    labelTexture.hasAlpha = true;
+    const labelContext = labelTexture.getContext();
+    labelContext.clearRect(0, 0, labelWidth, labelHeight);
+    labelContext.fillStyle = 'rgba(5, 12, 25, 0.78)';
+    labelContext.strokeStyle = 'rgba(147, 197, 253, 0.75)';
+    labelContext.lineWidth = 3;
+    const radius = 22;
+    labelContext.beginPath();
+    labelContext.moveTo(8 + radius, 18);
+    labelContext.lineTo(labelWidth - 8 - radius, 18);
+    labelContext.quadraticCurveTo(labelWidth - 8, 18, labelWidth - 8, 18 + radius);
+    labelContext.lineTo(labelWidth - 8, labelHeight - 18 - radius);
+    labelContext.quadraticCurveTo(labelWidth - 8, labelHeight - 18, labelWidth - 8 - radius, labelHeight - 18);
+    labelContext.lineTo(8 + radius, labelHeight - 18);
+    labelContext.quadraticCurveTo(8, labelHeight - 18, 8, labelHeight - 18 - radius);
+    labelContext.lineTo(8, 18 + radius);
+    labelContext.quadraticCurveTo(8, 18, 8 + radius, 18);
+    labelContext.closePath();
+    labelContext.fill();
+    labelContext.stroke();
+    labelContext.fillStyle = '#ffffff';
+    labelContext.font = 'bold 34px sans-serif';
+    const title = nodeData.label.length > 24 ? `${nodeData.label.slice(0, 21)}…` : nodeData.label;
+    labelContext.fillText(title, 34, 62);
+    labelContext.fillStyle = 'rgba(191, 219, 254, 0.85)';
+    labelContext.font = '24px sans-serif';
+    const subtitle = nodeData.type === 'self' ? 'Centro de tu mapa' : nodeData.type === 'project' ? 'Proyecto' : nodeData.type === 'relationship' ? 'Relación' : 'Nodo';
+    labelContext.fillText(subtitle, 34, 96);
+    labelTexture.update();
+
+    const labelPlane = BABYLON.MeshBuilder.CreatePlane(`${nodeData.id}_label`, { width: nodeData.size * 5.8, height: nodeData.size * 1.45 }, scene);
+    labelPlane.position = new BABYLON.Vector3(nodeData.x, nodeData.z + nodeData.size * 1.7, nodeData.y);
+    labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    labelPlane.isPickable = false;
+
+    const labelMat = new BABYLON.StandardMaterial(`${nodeData.id}_label_mat`, scene);
+    labelMat.diffuseTexture = labelTexture;
+    labelMat.emissiveColor = new BABYLON.Color3(0.85, 0.92, 1);
+    labelMat.opacityTexture = labelTexture;
+    labelMat.disableLighting = true;
+    labelMat.backFaceCulling = false;
+    labelPlane.material = labelMat;
 
     // === GEOMETRÍA DE WOLCOFF ===
     // Fase aleatoria para que cada nodo sea único
@@ -252,6 +300,10 @@ export class Node3D {
         const coreIntensity = 0.3 + Math.random() * 0.3;
         coreMat.emissiveColor = new BABYLON.Color3(coreIntensity * 0.8, coreIntensity * 0.7, coreIntensity * 0.7);
       }
+
+      labelPlane.position.x = sphere.position.x;
+      labelPlane.position.y = sphere.position.y + nodeData.size * 1.7;
+      labelPlane.position.z = sphere.position.z;
     });
 
     return sphere;
