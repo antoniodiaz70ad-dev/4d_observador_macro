@@ -47,6 +47,15 @@ interface DecisionData {
       relationships: number;
       intentions: number;
       manifestations: number;
+      dailyEntries?: number;
+    };
+    sufficiency?: {
+      required: string[];
+      ready: boolean;
+      readyCount: number;
+      totalRequired: number;
+      missing: string[];
+      message: string;
     };
     lastUpdated: string;
   };
@@ -200,11 +209,10 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
 
   if (!data) return null;
 
-  const actionStyle = ACTION_STYLES[data.globalRecommendation.action] || ACTION_STYLES.Mantener;
-  const hasDecisionContext = data.metadata.breakdown.projects > 0 ||
-    data.metadata.breakdown.relationships > 0 ||
-    data.metadata.breakdown.intentions > 0 ||
-    data.metadata.breakdown.manifestations > 0;
+  const hasSufficientEvidence = data.metadata.sufficiency?.ready ?? false;
+  const actionStyle = hasSufficientEvidence
+    ? (ACTION_STYLES[data.globalRecommendation.action] || ACTION_STYLES.Mantener)
+    : ACTION_STYLES.Mantener;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-auto">
@@ -238,48 +246,48 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="text-center md:text-left">
                 <p className="text-slate-400 text-sm uppercase tracking-wider mb-1">Salud del Sistema</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-6xl md:text-7xl font-bold text-white">{data.healthScore}</span>
-                  <span className="text-2xl text-slate-400">%</span>
-                </div>
-                <p className="text-slate-500 text-sm mt-2">
-                  {data.metadata.totalNodes} nodos · {data.metadata.totalLinks} conexiones
-                </p>
+                {hasSufficientEvidence ? (
+                  <>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-6xl md:text-7xl font-bold text-white">{data.healthScore}</span>
+                      <span className="text-2xl text-slate-400">%</span>
+                    </div>
+                    <p className="text-slate-500 text-sm mt-2">
+                      Calculado con {data.metadata.totalNodes} nodos · {data.metadata.totalLinks} conexiones
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-5xl md:text-6xl font-bold text-white">—</div>
+                    <p className="text-slate-300 text-sm mt-2">Sin evidencia suficiente para emitir salud, tensión o acción recomendada.</p>
+                  </>
+                )}
               </div>
               
               <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full flex items-center justify-center relative ${
+                !hasSufficientEvidence ? 'bg-slate-500/10' :
                 data.healthScore >= 70 ? 'bg-green-500/10' :
                 data.healthScore >= 40 ? 'bg-yellow-500/10' :
                 'bg-red-500/10'
               }`}>
-                {/* Círculo de progreso */}
-                <svg className="absolute inset-0 w-full h-full -rotate-90">
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="45%"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    className="text-slate-800"
-                  />
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="45%"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeDasharray={`${data.healthScore * 2.83} 283`}
-                    className={
-                      data.healthScore >= 70 ? 'text-green-400' :
-                      data.healthScore >= 40 ? 'text-yellow-400' :
-                      'text-red-400'
-                    }
-                  />
-                </svg>
-                
-                {data.healthScore >= 70 ? (
+                {hasSufficientEvidence && (
+                  <svg className="absolute inset-0 w-full h-full -rotate-90">
+                    <circle cx="50%" cy="50%" r="45%" fill="none" stroke="currentColor" strokeWidth="4" className="text-slate-800" />
+                    <circle
+                      cx="50%"
+                      cy="50%"
+                      r="45%"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      strokeDasharray={`${data.healthScore * 2.83} 283`}
+                      className={data.healthScore >= 70 ? 'text-green-400' : data.healthScore >= 40 ? 'text-yellow-400' : 'text-red-400'}
+                    />
+                  </svg>
+                )}
+                {!hasSufficientEvidence ? (
+                  <AlertTriangle className="w-12 h-12 text-slate-400" />
+                ) : data.healthScore >= 70 ? (
                   <TrendingUp className="w-12 h-12 text-green-400" />
                 ) : data.healthScore >= 40 ? (
                   <Zap className="w-12 h-12 text-yellow-400" />
@@ -289,20 +297,31 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
               </div>
             </div>
             
+            <div className="mt-6 rounded-2xl border border-slate-700/70 bg-slate-950/50 p-4">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <p className="text-sm font-semibold text-slate-100">Criterio de suficiencia</p>
+                <p className="text-xs text-slate-400">{data.metadata.sufficiency?.readyCount ?? 0}/3 señales listas</p>
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                {data.metadata.sufficiency?.message || 'Modo Decisión requiere proyecto, relación y registro diario para recomendar.'}
+              </p>
+            </div>
+            
             {/* Breakdown */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-800">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6 pt-6 border-t border-slate-800">
               {Object.entries(data.metadata.breakdown).map(([key, value]) => (
                 <div key={key} className="text-center">
                   <div 
                     className="w-3 h-3 rounded-full mx-auto mb-2"
-                    style={{ backgroundColor: TYPE_COLORS[key] || '#888' }}
+                    style={{ backgroundColor: TYPE_COLORS[key] || '#64748b' }}
                   />
                   <p className="text-2xl font-bold text-white">{value}</p>
                   <p className="text-xs text-slate-500 capitalize">
                     {key === 'projects' ? 'Proyectos' : 
                      key === 'relationships' ? 'Relaciones' : 
                      key === 'intentions' ? 'Intenciones' : 
-                     key === 'manifestations' ? 'Manifestaciones' : key}
+                     key === 'manifestations' ? 'Manifestaciones' :
+                     key === 'dailyEntries' ? 'Registros' : key}
                   </p>
                 </div>
               ))}
@@ -319,12 +338,14 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
               </div>
               
               <div className="space-y-3">
-                {data.topCritical.length === 0 && (
+                {(!hasSufficientEvidence || data.topCritical.length === 0) && (
                   <div className="rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-sm text-slate-400">
-                    Todavía no hay suficiente contexto para priorizar. Registra un proyecto, una relación o una decisión para generar prioridades con evidencia.
+                    {hasSufficientEvidence
+                      ? 'No hay prioridades críticas detectadas con la evidencia actual.'
+                      : 'Todavía no hay evidencia suficiente para priorizar. Completa proyecto, relación y registro diario antes de generar prioridades.'}
                   </div>
                 )}
-                {data.topCritical.map((node, index) => (
+                {hasSufficientEvidence && data.topCritical.map((node, index) => (
                   <div 
                     key={node.id}
                     className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50"
@@ -356,7 +377,7 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
             {/* Cuello de Botella + Recomendación Global */}
             <div className="space-y-6">
               {/* Cuello de Botella */}
-              {data.bottleneck && (
+              {hasSufficientEvidence && data.bottleneck && (
                 <Card className="bg-red-950/30 border-red-500/30 p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <AlertTriangle className="w-5 h-5 text-red-400" />
@@ -394,16 +415,16 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
                 
                 <div className="flex items-center gap-4 mb-4">
                   <div className={`px-4 py-2 rounded-lg font-bold text-xl ${actionStyle.bg} ${actionStyle.text}`}>
-                    {hasDecisionContext ? data.globalRecommendation.action : 'Sin evidencia'}
+                    {hasSufficientEvidence ? data.globalRecommendation.action : 'Sin evidencia'}
                   </div>
                   <ArrowRight className="w-5 h-5 text-slate-500" />
                   <p className="text-white font-medium">{data.globalRecommendation.target}</p>
                 </div>
                 
                 <p className="text-slate-300">
-                  {hasDecisionContext
+                  {hasSufficientEvidence
                     ? data.globalRecommendation.reason
-                    : 'Todavía no hay información suficiente. Registra un proyecto y su próxima decisión para que el modo ejecutivo recomiende con evidencia.'}
+                    : 'Modo Decisión queda en espera. No muestra “Delegar”, “Invertir”, tensión ni salud del sistema hasta contar con proyecto, relación y registro diario.'}
                 </p>
               </Card>
             </div>
@@ -421,7 +442,7 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
               </div>
               <button
                 onClick={analyzeWithAI}
-                disabled={aiAnalysis.loading}
+                disabled={aiAnalysis.loading || !hasSufficientEvidence}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white rounded-lg font-medium transition-all disabled:opacity-50"
               >
                 {aiAnalysis.loading ? (
@@ -465,7 +486,7 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
 
             {!aiAnalysis.result && !aiAnalysis.error && !aiAnalysis.loading && (
               <p className="text-sm text-slate-500 text-center py-4">
-                Haz clic en &quot;Analizar Sistema&quot; para obtener un diagnóstico IA personalizado de tu sistema.
+                {hasSufficientEvidence ? 'Haz clic en “Analizar Sistema” para obtener un diagnóstico IA personalizado de tu sistema.' : 'El análisis IA se habilita cuando haya proyecto, relación y registro diario.'}
               </p>
             )}
           </Card>

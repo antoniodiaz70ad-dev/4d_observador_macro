@@ -409,7 +409,7 @@ export function DashboardContent() {
                       Empieza aquí y sigue una ruta clara
                     </h2>
                     <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
-                      Captura lo mínimo, revisa qué cambió y después explora el tablero. Los indicadores se activan cuando hay evidencia suficiente: un proyecto, una relación y un registro diario.
+                      Captura lo mínimo, revisa qué cambió y después explora el tablero. Modo Decisión requiere proyecto, relación y registro diario; otros módulos, como Flujos de Energía, explican su propia fuente y fórmula.
                     </p>
 
                     <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -517,11 +517,11 @@ export function DashboardContent() {
                       <p className="text-sm font-semibold text-slate-100">Claridad de indicadores</p>
                       {hasMinimumSignals ? (
                         <p className="mt-2 text-xs leading-relaxed text-emerald-200">
-                          Ya hay señales mínimas para calcular patrones. Revisa coherencia, energía y decisiones con contexto.
+                          Ya hay señales mínimas para Modo Decisión y Coherencia. Flujos de Energía puede calcular antes si existen proyectos o relaciones, mostrando fuente y fórmula.
                         </p>
                       ) : (
                         <p className="mt-2 text-xs leading-relaxed text-slate-400">
-                          Aún falta {missingSignals.join(', ')}. Hasta completarlo, la app debe mostrar “Sin datos suficientes” en lugar de porcentajes.
+                          Aún falta {missingSignals.join(', ')} para Modo Decisión y Coherencia. Si otro módulo muestra porcentajes, debe indicar fuente y fórmula de cálculo.
                         </p>
                       )}
                     </div>

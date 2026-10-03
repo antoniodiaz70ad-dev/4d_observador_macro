@@ -118,6 +118,27 @@ export function RelationshipsMap() {
     }
   };
 
+  const getEnergyExchangeLabel = (exchange: string) => {
+    const labels: Record<string, string> = {
+      giving: 'Dando',
+      receiving: 'Recibiendo',
+      balanced: 'Equilibrado',
+      draining: 'Drenante',
+    };
+    return labels[exchange] || exchange.replace(/_/g, ' ');
+  };
+
+  const getRelationshipTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      mentor: 'Mentor',
+      personal: 'Personal',
+      professional: 'Profesional',
+      spiritual: 'Espiritual',
+      family: 'Familia',
+    };
+    return labels[type] || type.replace(/_/g, ' ');
+  };
+
   const getEnergyExchangeColor = (exchange: string) => {
     switch (exchange) {
       case 'giving':
@@ -322,7 +343,7 @@ export function RelationshipsMap() {
                 : 'text-slate-400 hover:text-slate-200'
               }
             >
-              {type} ({relationships.filter(r => r.relationshipType === type).length})
+              {getRelationshipTypeLabel(type)} ({relationships.filter(r => r.relationshipType === type).length})
             </Button>
           ))}
         </div>
@@ -367,7 +388,7 @@ export function RelationshipsMap() {
                           variant="outline" 
                           className={`text-xs ${getRelationshipTypeColor(relationship.relationshipType)}`}
                         >
-                          {relationship.relationshipType}
+                          {getRelationshipTypeLabel(relationship.relationshipType)}
                         </Badge>
                       </div>
                       
@@ -407,7 +428,7 @@ export function RelationshipsMap() {
                     >
                       <span className="flex items-center gap-1">
                         {getEnergyExchangeIcon(relationship.energyExchange)}
-                        {relationship.energyExchange}
+                        {getEnergyExchangeLabel(relationship.energyExchange)}
                       </span>
                     </Badge>
                   </div>

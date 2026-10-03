@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     // Agrupar energía por categorías
     const energyByCategory: Record<string, number> = {};
 
-    // Energía invertida en proyectos
+    // Energía invertida en proyectos: suma directa de energyInvested (1-10) por categoría.
     projects.forEach(project => {
       const category = project.category || 'personal';
       energyByCategory[category] = (energyByCategory[category] || 0) + project.energyInvested;
@@ -76,6 +76,8 @@ export async function GET(request: NextRequest) {
     const totalEnergy = Object.values(energyByCategory).reduce((sum, value) => sum + value, 0);
     const normalizedFlows = Object.entries(energyByCategory).map(([category, value]) => ({
       category: category.replace('relaciones_', ''),
+      rawCategory: category,
+      rawValue: Math.round(value * 10) / 10,
       value: totalEnergy > 0 ? Math.round((value / totalEnergy) * 100) : 0,
       label: getCategoryLabel(category)
     }));
@@ -122,9 +124,24 @@ export async function GET(request: NextRequest) {
       detailed: detailedFlows,
       source: normalizedFlows.length > 0 ? 'user_projects_relationships' : 'insufficient_signals',
       signalCounts: { projects: projects.length, relationships: relationships.length },
+      calculation: {
+        formula: 'porcentaje = valor bruto de categoría / suma de valores brutos × 100',
+        totalRawEnergy: Math.round(totalEnergy * 10) / 10,
+        inputs: {
+          projects: 'energyInvested por proyecto activo, escala 1-10',
+          relationships: 'connectionQuality × factor de intercambio energético',
+        },
+        exchangeFactors: {
+          giving: 0.8,
+          receiving: 0.4,
+          balanced: 0.6,
+          draining: -0.3,
+          default: 0.5,
+        },
+      },
       summary: {
         totalActive: normalizedFlows.length,
-        highestFlow: normalizedFlows[0]?.category || 'ninguno',
+        highestFlow: normalizedFlows[0]?.label || 'Ninguno',
         energyBalance: normalizedFlows.length > 0 ? calculateEnergyBalance(detailedFlows) : 'sin datos'
       }
     });
@@ -182,10 +199,16 @@ function getCategoryLabel(category: string): string {
     'espiritualidad': '🔮 Espiritualidad',
     'spiritual': '🔮 Espiritual',
     'mentor': '🎓 Mentoría',
-    'family': '👨‍👩‍👧‍👦 Familia'
+    'family': '👨‍👩‍👧‍👦 Familia',
+    'professional': '💼 Profesional',
+    'relaciones_professional': '🤝 Relaciones profesionales',
+    'relaciones_personal': '💗 Relaciones personales',
+    'relaciones_spiritual': '🔮 Relaciones espirituales',
+    'relaciones_mentor': '🎓 Mentorías',
+    'relaciones_family': '👨‍👩‍👧‍👦 Familia'
   };
   
-  return labels[category] || `✨ ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+  return labels[category] || `✨ ${humanizeToken(category)}`;
 }
 
 function calculateEnergyBalance(flows: any): string {
@@ -195,4 +218,10 @@ function calculateEnergyBalance(flows: any): string {
   if (inputTotal > outputTotal * 1.2) return 'recibiendo';
   if (outputTotal > inputTotal * 1.2) return 'dando';
   return 'equilibrado';
+}
+
+
+function humanizeToken(value: string): string {
+  const normalized = value.replace(/^relaciones_/, '').replace(/_/g, ' ');
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }

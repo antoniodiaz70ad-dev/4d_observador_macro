@@ -172,17 +172,27 @@ export function CoherenceMeters() {
         {(hasRealMetrics || isEditing) && (
           <>
         {/* Coherencia General */}
-        <div className="text-center">
-          <div className="text-6xl font-bold mb-2" style={{ color: getCoherenceColor(coherence.overallCoherence) }}>
-            {Math.round(coherence.overallCoherence)}%
+        {isEditing && !hasRealMetrics ? (
+          <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5 text-center">
+            <p className="text-sm font-semibold text-cyan-100">Borrador manual</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-400">
+              Ajusta los tres componentes antes de guardar. Mientras sea borrador no se emite porcentaje general ni clasificación como “Necesita atención”.
+            </p>
           </div>
-          <div className="text-lg text-slate-300 mb-1">Coherencia General</div>
-          <div className="text-sm" style={{ color: getCoherenceColor(coherence.overallCoherence) }}>
-            {getCoherenceStatus(coherence.overallCoherence)}
+        ) : (
+          <div className="text-center">
+            <div className="text-6xl font-bold mb-2" style={{ color: getCoherenceColor(coherence.overallCoherence) }}>
+              {Math.round(coherence.overallCoherence)}%
+            </div>
+            <div className="text-lg text-slate-300 mb-1">Coherencia General</div>
+            <div className="text-sm" style={{ color: getCoherenceColor(coherence.overallCoherence) }}>
+              {getCoherenceStatus(coherence.overallCoherence)}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Gráfico Radial */}
+        {(!isEditing || hasRealMetrics) && (
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart cx="50%" cy="50%" innerRadius="30%" outerRadius="80%" data={radialData}>
@@ -199,6 +209,7 @@ export function CoherenceMeters() {
             </RadialBarChart>
           </ResponsiveContainer>
         </div>
+        )}
 
         {/* Métricas Detalladas */}
         <div className="grid gap-4">

@@ -32,12 +32,23 @@ interface EnergyFlow {
   category: string;
   value: number;
   label: string;
+  rawCategory?: string;
+  rawValue?: number;
 }
 
 interface EnergyData {
   flows: EnergyFlow[];
   source?: string;
   signalCounts?: { projects: number; relationships: number };
+  calculation?: {
+    formula: string;
+    totalRawEnergy: number;
+    inputs: {
+      projects: string;
+      relationships: string;
+    };
+    exchangeFactors: Record<string, number>;
+  };
   detailed: {
     inputs: Array<{
       source: string;
@@ -114,6 +125,16 @@ export function EnergyFlows() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getBalanceLabel = (balance: string) => {
+    const labels: Record<string, string> = {
+      recibiendo: 'Recibiendo',
+      dando: 'Dando',
+      equilibrado: 'Equilibrado',
+      'sin datos': 'Sin datos',
+    };
+    return labels[balance] || balance;
   };
 
   const getBalanceIcon = (balance: string) => {
@@ -230,12 +251,35 @@ export function EnergyFlows() {
         <div className="flex items-center justify-center gap-2 p-3 bg-slate-800/50 rounded-lg">
           {getBalanceIcon(energyData.summary.energyBalance)}
           <span className={`font-semibold ${getBalanceColor(energyData.summary.energyBalance)}`}>
-            Balance: {energyData.summary.energyBalance.charAt(0).toUpperCase() + energyData.summary.energyBalance.slice(1)}
+            Balance: {getBalanceLabel(energyData.summary.energyBalance)}
           </span>
         </div>
       </CardHeader>
       
       <CardContent className="space-y-6">
+        <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-4">
+          <p className="text-sm font-semibold text-yellow-100">Fuente y cálculo</p>
+          <p className="mt-2 text-xs leading-relaxed text-slate-400">
+            Fuente actual: {energyData.signalCounts?.projects || 0} proyectos activos · {energyData.signalCounts?.relationships || 0} relaciones. Fórmula: cada porcentaje sale del valor bruto de su categoría dividido entre la suma total ({energyData.calculation?.totalRawEnergy ?? 0}).
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {energyData.flows.map(flow => (
+              <div key={flow.category} className="rounded-lg bg-slate-950/50 px-3 py-2 text-xs text-slate-300">
+                <span className="font-medium text-slate-100">{flow.label}</span>: {flow.rawValue ?? '—'} / {energyData.calculation?.totalRawEnergy ?? '—'} = {flow.value}%
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {isEditing && (
+          <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4">
+            <p className="text-sm font-semibold text-cyan-100">Borrador manual</p>
+            <p className="mt-1 text-xs leading-relaxed text-slate-400">
+              Estás ajustando una distribución manual. Estos cambios no son un diagnóstico ni una clasificación hasta que presiones “Aplicar Cambios”.
+            </p>
+          </div>
+        )}
+
         {/* Distribución Principal */}
         <div>
           <h3 className="text-lg font-semibold text-slate-200 mb-4 text-center">
@@ -382,7 +426,7 @@ export function EnergyFlows() {
           
           <div className="text-center p-4 bg-slate-800/30 rounded-lg">
             <div className={`text-lg font-bold ${getBalanceColor(energyData.summary.energyBalance)}`}>
-              {energyData.summary.energyBalance.charAt(0).toUpperCase() + energyData.summary.energyBalance.slice(1)}
+              {getBalanceLabel(energyData.summary.energyBalance)}
             </div>
             <div className="text-sm text-slate-400">Estado</div>
           </div>

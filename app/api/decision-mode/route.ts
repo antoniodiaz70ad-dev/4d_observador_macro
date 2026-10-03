@@ -43,7 +43,7 @@ export async function GET() {
     const userId = session.user.id;
 
     // Obtener datos del usuario en paralelo
-    const [user, projects, relationships, intentions, manifestations, metrics] = await Promise.all([
+    const [user, projects, relationships, intentions, manifestations, metrics, dailyEntryCount] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
         select: { id: true, name: true, email: true },
@@ -72,6 +72,7 @@ export async function GET() {
         where: { userId },
         orderBy: { date: 'desc' },
       }),
+      prisma.dailyEntry.count({ where: { userId } }),
     ]);
 
     const nodes: NodeData[] = [];
@@ -124,7 +125,13 @@ export async function GET() {
     relationships.forEach((rel, index) => {
       const pos = distributeInCircle(index, Math.max(relationships.length, 1), relationshipRadius, 5, -5);
       const energy = rel.connectionQuality / 10;
-      const coherence = rel.energyExchange === 'POSITIVE' ? energy * 1.2 : energy * 0.7;
+      const exchangeMultiplier: Record<string, number> = {
+        balanced: 1.05,
+        receiving: 0.95,
+        giving: 0.85,
+        draining: 0.45,
+      };
+      const coherence = energy * (exchangeMultiplier[rel.energyExchange] ?? 0.75);
       
       nodes.push({
         id: `relationship_${rel.id}`,
@@ -204,6 +211,18 @@ export async function GET() {
       });
     });
 
+    const sufficiencySignals = {
+      projects: projects.length > 0,
+      relationships: relationships.length > 0,
+      dailyEntries: dailyEntryCount > 0,
+    };
+    const sufficientEvidence = sufficiencySignals.projects && sufficiencySignals.relationships && sufficiencySignals.dailyEntries;
+    const missingSignals = [
+      !sufficiencySignals.projects ? 'un proyecto' : null,
+      !sufficiencySignals.relationships ? 'una relación' : null,
+      !sufficiencySignals.dailyEntries ? 'un registro diario' : null,
+    ].filter(Boolean) as string[];
+
     // Analizar el sistema con el Motor de Significado
     const systemCoherence = metrics ? {
       overall: metrics.overallCoherence || 0,
@@ -212,7 +231,18 @@ export async function GET() {
       energetic: metrics.energeticCoherence || 0,
     } : undefined;
 
-    const analysis = analyzeSystem(nodes, links, systemCoherence);
+    const analysis = sufficientEvidence
+      ? analyzeSystem(nodes, links, systemCoherence)
+      : {
+          healthScore: 0,
+          topCritical: [],
+          bottleneck: null,
+          globalRecommendation: {
+            action: 'Mantener' as const,
+            target: 'Evidencia pendiente',
+            reason: `Falta ${missingSignals.join(', ')} para emitir una recomendación ejecutiva.`,
+          },
+        };
 
     return NextResponse.json({
       success: true,
@@ -225,6 +255,17 @@ export async function GET() {
           relationships: relationships.length,
           intentions: intentions.length,
           manifestations: manifestations.length,
+          dailyEntries: dailyEntryCount,
+        },
+        sufficiency: {
+          required: ['proyecto', 'relación', 'registro diario'],
+          ready: sufficientEvidence,
+          readyCount: [sufficiencySignals.projects, sufficiencySignals.relationships, sufficiencySignals.dailyEntries].filter(Boolean).length,
+          totalRequired: 3,
+          missing: missingSignals,
+          message: sufficientEvidence
+            ? 'Modo Decisión calculado con proyecto, relación y registro diario.'
+            : `Sin evidencia suficiente para recomendar. Falta ${missingSignals.join(', ')}.`,
         },
         lastUpdated: new Date().toISOString(),
       },
