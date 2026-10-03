@@ -98,9 +98,9 @@ const EMPTY_BREAKDOWN: NonNullable<APIResponse['stats']['breakdown']> = { projec
 const EMPTY_STATS: APIResponse['stats'] = { total: 1, avgEnergy: 0, connections: 0, breakdown: EMPTY_BREAKDOWN, signals: { projects: 0, relationships: 0, dailyEntries: 0, sufficient: false } };
 
 const VISUAL_REFERENCE_NODES: NodeData[] = [
-  { id: 'observer', x: 12, y: 0, z: 18, size: 5.3, energy: 0.9, coherence: 0.9, label: 'Tú / Observador', color: '#67e8f9', type: 'self', metadata: { source: 'Escenario visual de prueba', empty: true } },
-  { id: 'project_levi', x: -14, y: -8, z: 26, size: 4.2, energy: 0.5, coherence: 0.7, label: 'levi / Proyecto', color: '#8b5cf6', type: 'project', metadata: { description: 'chasis', progress: 0, energyInvested: 5, impactLevel: 7, source: 'Escenario visual de prueba' } },
-  { id: 'relationship_diego', x: -7, y: 15, z: 13, size: 3.35, energy: 0.65, coherence: 0.65, label: 'diego / Relación', color: '#6ee7b7', type: 'relationship', metadata: { source: 'Escenario visual de prueba' } },
+  { id: 'observer', x: 12, y: -1, z: 22, size: 5.3, energy: 0.9, coherence: 0.9, label: 'Tú / Observador', color: '#67e8f9', type: 'self', metadata: { source: 'Escenario visual de prueba', empty: true } },
+  { id: 'project_levi', x: -14, y: -8, z: 29, size: 4.2, energy: 0.5, coherence: 0.7, label: 'levi / Proyecto', color: '#8b5cf6', type: 'project', metadata: { description: 'chasis', progress: 0, energyInvested: 5, impactLevel: 7, source: 'Escenario visual de prueba' } },
+  { id: 'relationship_diego', x: -7, y: 15, z: 17, size: 3.35, energy: 0.65, coherence: 0.65, label: 'diego / Relación', color: '#6ee7b7', type: 'relationship', metadata: { source: 'Escenario visual de prueba' } },
 ];
 
 const VISUAL_REFERENCE_LINKS: LinkData[] = [
@@ -318,18 +318,18 @@ function Scene3D() {
     const sumX = nodes.reduce((acc, n) => acc + n.x, 0) / nodes.length;
     const sumY = nodes.reduce((acc, n) => acc + n.y, 0) / nodes.length;
     const sumZ = nodes.reduce((acc, n) => acc + n.z, 0) / nodes.length;
-    return new BABYLON.Vector3(sumX, projectionMode === '2d' ? 0 : sumZ, sumY);
+    return new BABYLON.Vector3(sumX, projectionMode === '2d' ? 0 : sumZ + 2.5, sumY);
   }, [projectionMode]);
 
 
   const calculateRadius = useCallback((nodes: NodeData[]) => {
-    if (nodes.length <= 1) return projectionMode === '2d' ? 72 : 88;
+    if (nodes.length <= 1) return projectionMode === '2d' ? 78 : 96;
     const center = calculateCenter(nodes);
     const farthest = nodes.reduce((maxDistance, node) => {
       const position = new BABYLON.Vector3(node.x, projectionMode === '2d' ? 0 : node.z, node.y);
       return Math.max(maxDistance, BABYLON.Vector3.Distance(center, position));
     }, 0);
-    return Math.max(projectionMode === '2d' ? 72 : 88, Math.min(190, farthest * 2.5 + 46));
+    return Math.max(projectionMode === '2d' ? 78 : 96, Math.min(190, farthest * 2.35 + 54));
   }, [calculateCenter, projectionMode]);
 
   const frameNodes = useCallback((nodes: NodeData[] = visibleNodes.length > 0 ? visibleNodes : nodesData) => {
@@ -928,294 +928,163 @@ function Scene3D() {
         </Card>
       </div>
 
-      {/* Panel de información del nodo seleccionado - MOTOR DE SIGNIFICADO */}
+      {/* Panel de información del nodo seleccionado */}
       {selectedNode && (
-        <div className="absolute right-6 top-[118px] z-40 w-[370px] max-h-[calc(100vh-10rem)] animate-in slide-in-from-right overflow-y-auto pr-1">
-          <Card className="border-blue-200/20 bg-slate-950/70 p-6 shadow-2xl shadow-blue-950/40 backdrop-blur-2xl">
-            {/* Header con estado */}
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl">{hasSufficientEvidence && nodeInterpretation ? nodeInterpretation.statusEmoji : '◌'}</span>
-                  <h3 className="text-xl font-bold text-white">{selectedNode.label}</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  {hasSufficientEvidence && nodeInterpretation ? (
-                    <div
-                      className="px-2 py-0.5 rounded-full text-xs font-bold"
-                      style={{
-                        backgroundColor: `${nodeInterpretation.statusColor}20`,
-                        color: nodeInterpretation.statusColor,
-                        border: `1px solid ${nodeInterpretation.statusColor}50`
-                      }}
-                    >
-                      {nodeInterpretation.statusLabel}
+        <div className="absolute right-6 top-[118px] z-40 w-[370px] max-h-[calc(100vh-9rem)] animate-in slide-in-from-right overflow-y-auto pr-1">
+          <Card className="overflow-hidden border-blue-200/20 bg-slate-950/72 shadow-2xl shadow-blue-950/40 backdrop-blur-2xl">
+            <div className="p-5">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className={`flex h-[74px] w-[74px] shrink-0 items-center justify-center rounded-2xl border shadow-2xl ${selectedNode.type === 'project' ? 'border-violet-300/30 bg-violet-500/15 shadow-violet-900/35' : selectedNode.type === 'relationship' ? 'border-emerald-300/30 bg-emerald-400/15 shadow-emerald-900/30' : 'border-yellow-200/35 bg-yellow-300/15 shadow-yellow-900/30'}`}>
+                    <span className="text-4xl">
+                      {selectedNode.type === 'project' ? '▣' : selectedNode.type === 'relationship' ? '●' : '◉'}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-[22px] font-semibold leading-tight text-white">{selectedNode.label}</h3>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border border-cyan-300/40 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+                        {NODE_TYPES.find(t => t.id === selectedNode.type)?.label || selectedNode.type}
+                      </span>
+                      {hasSufficientEvidence && nodeInterpretation ? (
+                        <span className="rounded-full border px-3 py-1 text-xs font-semibold" style={{ borderColor: `${nodeInterpretation.statusColor}70`, color: nodeInterpretation.statusColor, backgroundColor: `${nodeInterpretation.statusColor}18` }}>
+                          {nodeInterpretation.statusLabel}
+                        </span>
+                      ) : (
+                        <span className="rounded-full border border-blue-200/20 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-blue-100/70">
+                          Datos fuente
+                        </span>
+                      )}
                     </div>
-                  ) : (
-                    <div className="rounded-full border border-amber-300/40 bg-amber-400/10 px-2 py-0.5 text-xs font-bold text-amber-200">
-                      Sin evidencia suficiente
-                    </div>
-                  )}
-                  <p className="text-xs text-slate-400 uppercase tracking-wider">
-                    {NODE_TYPES.find(t => t.id === selectedNode.type)?.label || selectedNode.type}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedNode(null)}
-                className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-700 rounded"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Métricas principales */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-slate-900/50 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-slate-400">Energía</span>
-                  <Zap className="w-3 h-3 text-yellow-400" />
-                </div>
-                <div className="flex items-end gap-1">
-                  <span className="text-2xl font-bold text-white">
-                    {hasSufficientEvidence && nodeInterpretation ? (nodeInterpretation.metrics.energy * 100).toFixed(0) : '—'}
-                  </span>
-                  <span className="text-xs text-slate-500 mb-1">{hasSufficientEvidence && nodeInterpretation ? '%' : ''}</span>
-                </div>
-                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ 
-                      width: hasSufficientEvidence && nodeInterpretation ? `${nodeInterpretation.metrics.energy * 100}%` : '0%',
-                      backgroundColor: hasSufficientEvidence && nodeInterpretation ? nodeInterpretation.statusColor : '#64748b'
-                    }}
-                  />
-                </div>
-              </div>
-              
-              <div className="bg-slate-900/50 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-slate-400">Coherencia</span>
-                  {hasSufficientEvidence && nodeInterpretation && nodeInterpretation.metrics.coherence >= 0.6 ? (
-                    <TrendingUp className="w-3 h-3 text-green-400" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3 text-red-400" />
-                  )}
-                </div>
-                <div className="flex items-end gap-1">
-                  <span className="text-2xl font-bold text-white">
-                    {hasSufficientEvidence && nodeInterpretation ? (nodeInterpretation.metrics.coherence * 100).toFixed(0) : '—'}
-                  </span>
-                  <span className="text-xs text-slate-500 mb-1">{hasSufficientEvidence && nodeInterpretation ? '%' : ''}</span>
-                </div>
-                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ 
-                      width: hasSufficientEvidence && nodeInterpretation ? `${nodeInterpretation.metrics.coherence * 100}%` : '0%',
-                      backgroundColor: hasSufficientEvidence && nodeInterpretation && nodeInterpretation.metrics.coherence >= 0.6 ? '#00FF88' : '#64748b'
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Stats secundarios */}
-            <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-              <div className="bg-slate-900/30 rounded-lg p-2">
-                <p className="text-xs text-slate-500">Conexiones</p>
-                <p className="text-lg font-bold text-cyan-400">{selectedConnections.length}</p>
-              </div>
-              <div className="bg-slate-900/30 rounded-lg p-2">
-                <p className="text-xs text-slate-500">Fuerza</p>
-                <p className="text-lg font-bold text-purple-400">
-                  {hasSufficientEvidence && nodeInterpretation ? `${(nodeInterpretation.metrics.avgLinkStrength * 100).toFixed(0)}%` : '—'}
-                </p>
-              </div>
-              <div className="bg-slate-900/30 rounded-lg p-2">
-                <p className="text-xs text-slate-500">Score</p>
-                <p className="text-lg font-bold text-white">
-                  {hasSufficientEvidence && nodeInterpretation ? nodeInterpretation.metrics.score.toFixed(1) : '—'}
-                </p>
-              </div>
-            </div>
-
-            {!hasSufficientEvidence && (
-              <div className="mb-4 rounded-lg border border-amber-300/30 bg-amber-400/10 p-3">
-                <p className="text-sm font-semibold text-amber-100">Sin evidencia para diagnóstico</p>
-                <p className="mt-1 text-xs leading-relaxed text-amber-100/75">
-                  Falta {missingEvidence.join(', ') || 'información'} para activar estado, urgencia y recomendación. Estos valores se muestran solo como fuente del mapa, no como lectura final.
-                </p>
-              </div>
-            )}
-
-            {!hasSufficientEvidence && (
-              <div className="mb-4 grid grid-cols-2 gap-3">
-                <div className="rounded-lg bg-slate-900/40 p-3">
-                  <p className="text-xs text-slate-500">Valor fuente de energía</p>
-                  <p className="mt-1 text-lg font-bold text-cyan-200">{selectedSourceEnergy}%</p>
-                </div>
-                <div className="rounded-lg bg-slate-900/40 p-3">
-                  <p className="text-xs text-slate-500">Valor fuente de coherencia</p>
-                  <p className="mt-1 text-lg font-bold text-violet-200">{selectedSourceCoherence}%</p>
-                </div>
-              </div>
-            )}
-
-            {/* Contexto y vínculos del nodo */}
-            <div className="mb-4 rounded-lg border border-slate-700/70 bg-slate-950/60 p-3">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Contexto</p>
-                  <p className="text-sm text-slate-300">
-                    Último cambio: {selectedLastChange || 'sin fecha registrada'}
-                  </p>
-                  {selectedNode.metadata?.source && (
-                    <p className="mt-1 text-xs leading-relaxed text-slate-500">Fuente: {selectedNode.metadata.source}</p>
-                  )}
+                  </div>
                 </div>
                 <button
-                  onClick={() => focusNode(selectedNode)}
-                  className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 hover:bg-cyan-500/20"
+                  onClick={() => setSelectedNode(null)}
+                  className="rounded-full p-2 text-blue-100/55 transition hover:bg-white/10 hover:text-white"
+                  aria-label="Cerrar detalle"
                 >
-                  Enfocar
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Network className="h-3 w-3 text-cyan-300" />
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Vínculos registrados</p>
+              <div className="mb-5 border-t border-blue-200/15 pt-4">
+                <p className="text-xs font-medium text-blue-200/70">Descripción</p>
+                <p className="mt-1 text-base leading-relaxed text-white/92">
+                  {selectedNode.metadata?.description || (selectedNode.type === 'self' ? 'Centro de tu mapa' : selectedNode.type === 'project' ? 'Proyecto conectado al observador' : selectedNode.type === 'relationship' ? 'Relación conectada al observador' : 'Elemento conectado')}
+                </p>
+              </div>
+
+              <div className="mb-5 space-y-4">
+                <div>
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="text-blue-100/75">{selectedNode.type === 'project' ? 'Energía dedicada' : 'Energía del nodo'}</span>
+                    <span className="font-semibold text-white">
+                      {selectedNode.metadata?.energyInvested != null ? `${selectedNode.metadata.energyInvested}/10` : `${selectedSourceEnergy}%`}
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-blue-200/12">
+                    <div className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-sky-500" style={{ width: `${selectedNode.metadata?.energyInvested != null ? Math.min(100, Number(selectedNode.metadata.energyInvested) * 10) : selectedSourceEnergy}%` }} />
+                  </div>
                 </div>
 
-                {selectedConnections.length === 0 ? (
-                  <p className="text-xs text-slate-500">Todavía no hay conexiones para este nodo.</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {selectedConnections.slice(0, 5).map((connection) => (
+                <div>
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="text-blue-100/75">{selectedNode.type === 'project' ? 'Impacto esperado' : 'Coherencia fuente'}</span>
+                    <span className="font-semibold text-white">
+                      {selectedNode.metadata?.impactLevel != null ? `${selectedNode.metadata.impactLevel}/10` : `${selectedSourceCoherence}%`}
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-blue-200/12">
+                    <div className="h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-300 to-violet-400" style={{ width: `${selectedNode.metadata?.impactLevel != null ? Math.min(100, Number(selectedNode.metadata.impactLevel) * 10) : selectedSourceCoherence}%` }} />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="text-blue-100/75">Progreso</span>
+                    <span className="font-semibold text-white">{selectedNode.metadata?.progress != null ? `${selectedNode.metadata.progress}%` : '—'}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-blue-200/12">
+                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300" style={{ width: `${selectedNode.metadata?.progress != null ? Math.min(100, Number(selectedNode.metadata.progress)) : 0}%` }} />
+                  </div>
+                </div>
+              </div>
+
+              {!hasSufficientEvidence && (
+                <div className="mb-5 rounded-2xl border border-blue-200/15 bg-white/[0.035] p-4">
+                  <p className="text-sm font-semibold text-white">Sin diagnóstico todavía</p>
+                  <p className="mt-1 text-xs leading-relaxed text-blue-100/65">
+                    Faltan {missingEvidence.join(', ') || 'señales'} para activar recomendaciones. Aquí solo mostramos los valores fuente del mapa.
+                  </p>
+                </div>
+              )}
+
+              <div className="mb-5 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-2xl bg-white/[0.04] p-3">
+                  <p className="text-[11px] text-blue-100/50">Vínculos</p>
+                  <p className="mt-1 text-lg font-semibold text-cyan-200">{selectedConnections.length}</p>
+                </div>
+                <div className="rounded-2xl bg-white/[0.04] p-3">
+                  <p className="text-[11px] text-blue-100/50">Fuerza</p>
+                  <p className="mt-1 text-lg font-semibold text-violet-200">{selectedConnections.length > 0 ? `${Math.round((selectedConnections.reduce((sum, link) => sum + link.strength, 0) / selectedConnections.length) * 100)}%` : '—'}</p>
+                </div>
+                <div className="rounded-2xl bg-white/[0.04] p-3">
+                  <p className="text-[11px] text-blue-100/50">Cambio</p>
+                  <p className="mt-1 truncate text-sm font-semibold text-white">{selectedLastChange || '—'}</p>
+                </div>
+              </div>
+
+              {selectedConnections.length > 0 && (
+                <div className="mb-5 rounded-2xl border border-blue-200/15 bg-slate-950/45 p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Network className="h-4 w-4 text-cyan-200" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/55">Conexiones</p>
+                  </div>
+                  <div className="space-y-2">
+                    {selectedConnections.slice(0, 3).map((connection) => (
                       <button
                         key={`${connection.source}-${connection.target}`}
                         onClick={() => connection.otherNode && focusNode(connection.otherNode)}
-                        className="flex w-full items-center justify-between gap-3 rounded-md bg-slate-900/70 px-3 py-2 text-left hover:bg-cyan-950/30"
+                        className="flex w-full items-center justify-between gap-3 rounded-xl border border-blue-200/10 bg-white/[0.035] px-3 py-2 text-left transition hover:border-cyan-300/40 hover:bg-cyan-400/10"
                       >
-                        <div className="min-w-0">
-                          <p className="text-sm text-white truncate">{connection.otherNode?.label}</p>
-                          <p className="text-[11px] text-slate-500">Vínculo registrado</p>
-                        </div>
-                        <span className="shrink-0 rounded-full bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-300">
-                          fuerza {(connection.strength * 100).toFixed(0)}%
-                        </span>
+                        <span className="min-w-0 truncate text-sm font-medium text-white">{connection.otherNode?.label}</span>
+                        <span className="shrink-0 rounded-full bg-cyan-400/10 px-2 py-0.5 text-[11px] text-cyan-200">{Math.round(connection.strength * 100)}%</span>
                       </button>
                     ))}
-                    {selectedConnections.length > 5 && (
-                      <p className="text-xs text-slate-500">+{selectedConnections.length - 5} vínculos más</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {hasSufficientEvidence && nodeInterpretation && (
-            <>
-            {/* Recomendación - MOTOR DE SIGNIFICADO */}
-            <div 
-              className="rounded-lg p-4 mb-4"
-              style={{ 
-                backgroundColor: `${nodeInterpretation.statusColor}10`,
-                border: `1px solid ${nodeInterpretation.statusColor}30`
-              }}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <ArrowRight className="w-4 h-4" style={{ color: nodeInterpretation.statusColor }} />
-                <span className="text-sm font-semibold text-white">Recomendación</span>
-              </div>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                {nodeInterpretation.recommendation}
-              </p>
-            </div>
-
-            {/* Acción sugerida */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-700">
-              <span className="text-xs text-slate-400">Acción sugerida</span>
-              <div 
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${
-                  nodeInterpretation.action === 'Mantener' ? 'bg-green-500/20 text-green-400' :
-                  nodeInterpretation.action === 'Invertir' ? 'bg-cyan-500/20 text-cyan-400' :
-                  nodeInterpretation.action === 'Delegar' ? 'bg-blue-500/20 text-blue-400' :
-                  nodeInterpretation.action === 'Corregir' ? 'bg-yellow-500/20 text-yellow-400' :
-                  nodeInterpretation.action === 'Reformular' ? 'bg-orange-500/20 text-orange-400' :
-                  'bg-red-500/20 text-red-400'
-                }`}
-              >
-                {nodeInterpretation.action}
-              </div>
-            </div>
-
-            {/* Indicador de urgencia */}
-            {nodeInterpretation.urgency !== 'low' && (
-              <div className={`mt-3 px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 ${
-                nodeInterpretation.urgency === 'critical' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                nodeInterpretation.urgency === 'high' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
-                'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-              }`}>
-                <AlertCircle className="w-3 h-3" />
-                {nodeInterpretation.urgency === 'critical' && 'Requiere atención inmediata'}
-                {nodeInterpretation.urgency === 'high' && 'Prioridad alta'}
-                {nodeInterpretation.urgency === 'medium' && 'Monitorear activamente'}
-              </div>
-            )}
-
-            {/* Botón de Análisis IA */}
-            <div className="mt-4 pt-4 border-t border-slate-700">
-              <button
-                onClick={() => analyzeNodeWithAI(selectedNode)}
-                disabled={aiAnalysis.loading}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white rounded-lg font-medium transition-all disabled:opacity-50"
-              >
-                {aiAnalysis.loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Analizando con IA...
-                  </>
-                ) : (
-                  <>
-                    <Brain className="w-4 h-4" />
-                    Análisis IA Profundo
-                  </>
-                )}
-              </button>
-
-              {/* Resultado del análisis IA */}
-              {aiAnalysis.result && (
-                <div className="mt-3 p-3 bg-purple-950/30 border border-purple-500/30 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Brain className="w-4 h-4 text-purple-400" />
-                    <span className="text-sm font-semibold text-purple-300">Diagnóstico IA</span>
-                  </div>
-                  <p className="text-sm text-slate-300 mb-2">{aiAnalysis.result.diagnosis}</p>
-                  <div className="flex gap-2 mb-2">
-                    <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full">
-                      Coherencia: {(aiAnalysis.result.coherence * 100).toFixed(0)}%
-                    </span>
-                    <span className="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded-full">
-                      Energía: {(aiAnalysis.result.energy * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  <p className="text-xs text-purple-300/80 italic">{aiAnalysis.result.recommendation}</p>
-                </div>
-              )}
-
-              {aiAnalysis.error && (
-                <div className="mt-3 p-3 bg-red-950/30 border border-red-500/30 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-400" />
-                    <span className="text-sm text-red-300">{aiAnalysis.error}</span>
                   </div>
                 </div>
               )}
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => focusNode(selectedNode)}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-300 to-violet-500 px-4 text-sm font-semibold text-slate-950 shadow-lg shadow-violet-500/25 transition hover:brightness-110"
+                >
+                  <Target className="h-4 w-4" />
+                  Centrar en el mapa
+                </button>
+                {hasSufficientEvidence && nodeInterpretation && (
+                  <button
+                    onClick={() => analyzeNodeWithAI(selectedNode)}
+                    disabled={aiAnalysis.loading}
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-blue-200/15 bg-white/[0.04] px-4 text-sm font-medium text-blue-100 transition hover:bg-white/[0.08] disabled:opacity-50"
+                  >
+                    {aiAnalysis.loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+                    {aiAnalysis.loading ? 'Analizando...' : 'Análisis IA'}
+                  </button>
+                )}
+              </div>
+
+              {hasSufficientEvidence && nodeInterpretation && (
+                <div className="mt-5 rounded-2xl border border-blue-200/15 bg-white/[0.035] p-4">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold text-white">Siguiente acción</span>
+                    <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-200">{nodeInterpretation.action}</span>
+                  </div>
+                  <p className="text-sm leading-relaxed text-blue-100/75">{nodeInterpretation.recommendation}</p>
+                </div>
+              )}
             </div>
-            </>
-            )}
           </Card>
         </div>
       )}
