@@ -158,6 +158,7 @@ export default function EconomyViewPage() {
     );
   }
 
+  const hasEconomyProjects = Boolean(data && data.projects.length > 0);
   const allPaused = data?.projects.every(p => p.agentMode === 'paused');
 
   return (
@@ -223,13 +224,15 @@ export default function EconomyViewPage() {
                 Economy View
               </h1>
               <p className="text-xs text-slate-400 flex items-center gap-2">
-                {isPolling ? (
+                {hasEconomyProjects && isPolling ? (
                   <>
                     <Radio className="h-3 w-3 text-green-400 animate-pulse" />
                     <span className="text-green-400">EN VIVO</span>
                   </>
-                ) : (
+                ) : hasEconomyProjects ? (
                   <span className="text-slate-500">Pausado</span>
+                ) : (
+                  <span className="text-yellow-400">SIN PROYECTOS CONECTADOS</span>
                 )}
               </p>
             </div>

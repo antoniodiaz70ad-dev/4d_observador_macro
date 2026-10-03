@@ -159,18 +159,24 @@ export function SynchronicityTracker() {
     return { text: 'Baja Sincronía', color: 'text-red-400' };
   };
 
-  // Preparar datos para gráficos (simulando datos históricos)
+  // Preparar datos reales para gráficos: últimos 7 días, sin valores simulados
   const chartData = Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
+    date.setHours(0, 0, 0, 0);
     date.setDate(date.getDate() - (6 - i));
+    const nextDate = new Date(date);
+    nextDate.setDate(date.getDate() + 1);
+    const count = data.synchronicities.filter(sync => sync.date >= date && sync.date < nextDate).length;
     return {
       date: date.toLocaleDateString('es-ES', { weekday: 'short' }),
-      synchronicities: Math.floor(Math.random() * 5) + 1,
-      score: Math.floor(Math.random() * 40) + 40
+      synchronicities: count
     };
   });
 
-  const alignmentLevel = getAlignmentLevel(data.metrics.synchronicityScore);
+  const hasSynchronicities = data.synchronicities.length > 0;
+  const alignmentLevel = hasSynchronicities
+    ? getAlignmentLevel(data.metrics.synchronicityScore)
+    : { text: 'Sin datos suficientes', color: 'text-slate-400' };
 
   if (loading && data.synchronicities.length === 0) {
     return (
@@ -241,7 +247,9 @@ export function SynchronicityTracker() {
             </span>
           </div>
           <p className="text-sm text-slate-400 mt-1">
-            Tu nivel de sincronía con el flujo universal
+            {hasSynchronicities
+              ? 'Basado en tus sincronicidades registradas'
+              : 'Registra al menos una sincronicidad para calcular este indicador'}
           </p>
         </div>
       </CardHeader>
@@ -325,6 +333,9 @@ export function SynchronicityTracker() {
           <h3 className="text-lg font-semibold text-slate-200 mb-4 text-center">
             Flujo de Sincronicidades
           </h3>
+          {!hasSynchronicities && (
+            <p className="-mt-2 mb-3 text-center text-xs text-slate-500">Sin valores simulados: la gráfica se llenará con tus registros reales.</p>
+          )}
           
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">

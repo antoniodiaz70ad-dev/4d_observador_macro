@@ -22,26 +22,23 @@ export async function GET(request: NextRequest) {
     });
 
     if (!latestMetrics) {
-      // Si no hay métricas, crear unas por defecto
-      const defaultMetrics = await prisma.userMetrics.create({
-        data: {
-          userId,
-          overallCoherence: 65.0,
-          emotionalCoherence: 70.0,
-          logicalCoherence: 60.0,
-          energeticCoherence: 65.0,
-          synchronicityCount: 3,
-          synchronicityScore: 75.0,
-          manifestationRate: 55.0,
-          projectCompletion: 40.0,
-          relationshipHealth: 80.0,
-          weeklyTrend: 'improving'
-        }
+      return NextResponse.json({
+        overallCoherence: 0,
+        emotionalCoherence: 0,
+        logicalCoherence: 0,
+        energeticCoherence: 0,
+        synchronicityCount: 0,
+        synchronicityScore: 0,
+        manifestationRate: 0,
+        projectCompletion: 0,
+        relationshipHealth: 0,
+        weeklyTrend: 'empty',
+        source: 'empty',
+        message: 'Sin métricas registradas todavía'
       });
-      return NextResponse.json(defaultMetrics);
     }
 
-    return NextResponse.json(latestMetrics);
+    return NextResponse.json({ ...latestMetrics, source: 'user_metrics' });
   } catch (error) {
     console.error('Error obteniendo métricas de coherencia:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

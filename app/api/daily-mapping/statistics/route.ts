@@ -50,7 +50,7 @@ export async function GET(request: Request) {
     
     let currentStreak = 0;
     let maxStreak = 0;
-    let tempStreak = 1;
+    let tempStreak = sortedDates.length > 0 ? 1 : 0;
     
     for (let i = 1; i < sortedDates.length; i++) {
       const prevDate = new Date(sortedDates[i - 1]);

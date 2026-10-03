@@ -22,6 +22,8 @@ interface CoherenceData {
   emotionalCoherence: number;
   logicalCoherence: number;
   energeticCoherence: number;
+  source?: string;
+  message?: string;
 }
 
 export function CoherenceMeters() {
@@ -91,6 +93,13 @@ export function CoherenceMeters() {
     return 'Necesita atención';
   };
 
+  const hasRealMetrics = coherence.source !== 'empty' && (
+    coherence.overallCoherence > 0 ||
+    coherence.emotionalCoherence > 0 ||
+    coherence.logicalCoherence > 0 ||
+    coherence.energeticCoherence > 0
+  );
+
   const radialData = [
     {
       name: 'Emocional',
@@ -145,6 +154,21 @@ export function CoherenceMeters() {
       </CardHeader>
       
       <CardContent className="space-y-6">
+        {!hasRealMetrics && !isEditing && (
+          <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-5 text-center">
+            <p className="text-sm font-semibold text-purple-200">Aún no hay coherencia calculada con tus registros</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-400">
+              Estos indicadores se vuelven útiles cuando registras entradas diarias o ajustas manualmente tu estado. Por ahora no se muestran porcentajes demostrativos.
+            </p>
+            <Button
+              onClick={() => setIsEditing(true)}
+              className="mt-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500"
+            >
+              Registrar estado inicial
+            </Button>
+          </div>
+        )}
+
         {/* Coherencia General */}
         <div className="text-center">
           <div className="text-6xl font-bold mb-2" style={{ color: getCoherenceColor(coherence.overallCoherence) }}>

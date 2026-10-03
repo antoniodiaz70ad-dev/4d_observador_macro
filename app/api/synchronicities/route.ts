@@ -48,12 +48,14 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    const hasRealSynchronicities = synchronicities.length > 0;
+
     return NextResponse.json({
       synchronicities,
-      metrics: metrics || {
-        synchronicityCount: 0,
-        synchronicityScore: 0,
-        manifestationRate: 0
+      metrics: {
+        synchronicityCount: synchronicities.length,
+        synchronicityScore: hasRealSynchronicities ? (metrics?.synchronicityScore || 0) : 0,
+        manifestationRate: hasRealSynchronicities ? (metrics?.manifestationRate || 0) : 0
       }
     });
   } catch (error) {

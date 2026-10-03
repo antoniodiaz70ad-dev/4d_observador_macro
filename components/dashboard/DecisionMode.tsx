@@ -201,6 +201,10 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
   if (!data) return null;
 
   const actionStyle = ACTION_STYLES[data.globalRecommendation.action] || ACTION_STYLES.Mantener;
+  const hasDecisionContext = data.metadata.breakdown.projects > 0 ||
+    data.metadata.breakdown.relationships > 0 ||
+    data.metadata.breakdown.intentions > 0 ||
+    data.metadata.breakdown.manifestations > 0;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-auto">
@@ -315,6 +319,11 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
               </div>
               
               <div className="space-y-3">
+                {data.topCritical.length === 0 && (
+                  <div className="rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-sm text-slate-400">
+                    Todavía no hay suficiente contexto para priorizar. Registra un proyecto, una relación o una decisión para generar prioridades con evidencia.
+                  </div>
+                )}
                 {data.topCritical.map((node, index) => (
                   <div 
                     key={node.id}
@@ -391,7 +400,11 @@ Breakdown: ${data.metadata.breakdown.projects} proyectos, ${data.metadata.breakd
                   <p className="text-white font-medium">{data.globalRecommendation.target}</p>
                 </div>
                 
-                <p className="text-slate-300">{data.globalRecommendation.reason}</p>
+                <p className="text-slate-300">
+                  {hasDecisionContext
+                    ? data.globalRecommendation.reason
+                    : 'Todavía no hay información suficiente. Registra un proyecto y su próxima decisión para que el modo ejecutivo recomiende con evidencia.'}
+                </p>
               </Card>
             </div>
           </div>
