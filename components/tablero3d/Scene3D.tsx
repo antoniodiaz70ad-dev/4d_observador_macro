@@ -323,7 +323,7 @@ function Scene3D() {
 
 
   const calculateRadius = useCallback((nodes: NodeData[]) => {
-    if (nodes.length <= 1) return projectionMode === '2d' ? 82 : 106;
+    if (nodes.length <= 1) return projectionMode === '2d' ? 58 : 68;
     const center = calculateCenter(nodes);
     const farthest = nodes.reduce((maxDistance, node) => {
       const position = new BABYLON.Vector3(node.x, projectionMode === '2d' ? 0 : node.z, node.y);

@@ -83,7 +83,7 @@ export class Node3D {
         ? new BABYLON.Color3(0.36, 0.68, 0.78)
         : new BABYLON.Color3(1, 0.9, 0.35);
     material.specularPower = isProject ? 28 : 42;
-    material.alpha = isProject ? 0.72 : isObserver ? 0.05 : 0.78;
+    material.alpha = isProject ? 0.72 : isObserver ? 0.0 : 0.78;
     material.backFaceCulling = false;
     if (isProject) {
       material.disableLighting = true;
@@ -114,7 +114,7 @@ export class Node3D {
     const glowMat = new BABYLON.StandardMaterial(`${nodeData.id}_glow_mat`, scene);
     glowMat.diffuseColor = finalColor;
     glowMat.emissiveColor = finalColor;
-    glowMat.alpha = isObserver ? 0.1 : isProject ? 0.12 : 0.16;
+    glowMat.alpha = isObserver ? 0.045 : isProject ? 0.12 : 0.16;
     glowMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
     glowMat.backFaceCulling = false;
     glow.material = glowMat;
@@ -410,10 +410,10 @@ export class Node3D {
 
       const eyePlane = BABYLON.MeshBuilder.CreatePlane(
         `${nodeData.id}_eye_plane`,
-        { width: nodeData.size * 1.92, height: nodeData.size * 0.96 },
+        { width: nodeData.size * 2.52, height: nodeData.size * 1.26 },
         scene
       );
-      eyePlane.position = sphere.position.clone().add(new BABYLON.Vector3(0, nodeData.size * 0.12, -nodeData.size * 0.02));
+      eyePlane.position = sphere.position.clone().add(new BABYLON.Vector3(0, nodeData.size * 0.2, -nodeData.size * 0.02));
       eyePlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
       eyePlane.renderingGroupId = 2;
       eyePlane.isPickable = false;
@@ -429,7 +429,7 @@ export class Node3D {
       let eyeFrame = 0;
       scene.registerBeforeRender(() => {
         eyePlane.position.x = sphere.position.x;
-        eyePlane.position.y = sphere.position.y + nodeData.size * 0.12;
+        eyePlane.position.y = sphere.position.y + nodeData.size * 0.2;
         eyePlane.position.z = sphere.position.z - nodeData.size * 0.02;
 
         if (eyeRing) {
@@ -613,7 +613,7 @@ export class Node3D {
     const labelPlaneWidth = Math.min(nodeData.size * 3.4, 10.8);
     const labelPlaneHeight = Math.min(nodeData.size * 0.95, 2.55);
     const labelPlane = BABYLON.MeshBuilder.CreatePlane(`${nodeData.id}_label`, { width: labelPlaneWidth, height: labelPlaneHeight }, scene);
-    labelPlane.position = new BABYLON.Vector3(nodeData.x, nodeData.z - nodeData.size * 1.18, nodeData.y);
+    labelPlane.position = new BABYLON.Vector3(nodeData.x, nodeData.z - nodeData.size * (isObserver ? 1.62 : 1.18), nodeData.y);
     labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
     labelPlane.isPickable = false;
 
@@ -815,7 +815,7 @@ export class Node3D {
       }
 
       labelPlane.position.x = sphere.position.x;
-      labelPlane.position.y = sphere.position.y - nodeData.size * 1.18;
+      labelPlane.position.y = sphere.position.y - nodeData.size * (isObserver ? 1.62 : 1.18);
       labelPlane.position.z = sphere.position.z;
     });
 
