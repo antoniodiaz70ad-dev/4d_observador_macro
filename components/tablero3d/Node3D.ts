@@ -114,7 +114,7 @@ export class Node3D {
     const glowMat = new BABYLON.StandardMaterial(`${nodeData.id}_glow_mat`, scene);
     glowMat.diffuseColor = finalColor;
     glowMat.emissiveColor = finalColor;
-    glowMat.alpha = isObserver ? 0.045 : isProject ? 0.12 : 0.16;
+    glowMat.alpha = isObserver ? 0.0 : isProject ? 0.12 : 0.16;
     glowMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
     glowMat.backFaceCulling = false;
     glow.material = glowMat;
@@ -410,7 +410,7 @@ export class Node3D {
 
       const eyePlane = BABYLON.MeshBuilder.CreatePlane(
         `${nodeData.id}_eye_plane`,
-        { width: nodeData.size * 2.52, height: nodeData.size * 1.26 },
+        { width: nodeData.size * 2.72, height: nodeData.size * 1.36 },
         scene
       );
       eyePlane.position = sphere.position.clone().add(new BABYLON.Vector3(0, nodeData.size * 0.2, -nodeData.size * 0.02));
