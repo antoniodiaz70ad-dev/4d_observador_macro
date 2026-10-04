@@ -89,6 +89,9 @@ export class Node3D {
       material.disableLighting = true;
     }
     sphere.material = material;
+    if (isObserver) {
+      sphere.visibility = 0;
+    }
 
     // Borde brillante para el cubo, como la referencia visual
     if (isProject) {
@@ -118,6 +121,9 @@ export class Node3D {
     glowMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
     glowMat.backFaceCulling = false;
     glow.material = glowMat;
+    if (isObserver) {
+      glow.visibility = 0;
+    }
     glow.isPickable = false;
 
     // Núcleo / icono central según tipo
