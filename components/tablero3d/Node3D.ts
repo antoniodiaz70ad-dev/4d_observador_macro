@@ -193,6 +193,7 @@ export class Node3D {
       eyeMat.alpha = 0.18;
       eyeMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
       eyeRing.material = eyeMat;
+      eyeRing.visibility = 0;
       eyeRing.isPickable = false;
 
       const eyeTextureSize = { width: 1024, height: 512 };
@@ -220,6 +221,25 @@ export class Node3D {
         ctx.beginPath();
         ctx.arc(cx, cy, 330, 0, Math.PI * 2);
         ctx.fill();
+
+        // Órbita única, fina y tenue integrada en la textura para evitar trazos 3D inestables.
+        ctx.save();
+        ctx.shadowColor = 'rgba(34, 211, 238, 0.32)';
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 224, Math.PI * 1.02, Math.PI * 1.93);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(124, 58, 237, 0.2)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 224, Math.PI * 1.93, Math.PI * 2.74);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.78)';
+        ctx.beginPath();
+        ctx.arc(cx - 166 + Math.sin(shimmer * 0.16) * 6, cy - 146 + Math.cos(shimmer * 0.16) * 4, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
 
         // Silueta exterior metálica superior e inferior.
         const shellGradient = ctx.createLinearGradient(0, 96, width, 392);
