@@ -72,16 +72,18 @@ export class Node3D {
     material.diffuseColor = isProject
       ? new BABYLON.Color3(0.42, 0.22, 0.95)
       : isObserver
-        ? new BABYLON.Color3(1.0, 0.68, 0.08)
+        ? new BABYLON.Color3(0.05, 0.17, 0.24)
         : finalColor;
     material.emissiveColor = isObserver
-      ? new BABYLON.Color3(0.95, 0.46, 0.02)
+      ? new BABYLON.Color3(0.02, 0.22, 0.28)
       : finalColor.scale(isProject ? 0.36 : 0.42);
     material.specularColor = isProject
       ? new BABYLON.Color3(0.42, 0.34, 0.72)
-      : new BABYLON.Color3(1, 0.9, 0.35);
+      : isObserver
+        ? new BABYLON.Color3(0.36, 0.68, 0.78)
+        : new BABYLON.Color3(1, 0.9, 0.35);
     material.specularPower = isProject ? 28 : 42;
-    material.alpha = isProject ? 0.72 : isObserver ? 0.62 : 0.78;
+    material.alpha = isProject ? 0.72 : isObserver ? 0.05 : 0.78;
     material.backFaceCulling = false;
     if (isProject) {
       material.disableLighting = true;
@@ -112,7 +114,7 @@ export class Node3D {
     const glowMat = new BABYLON.StandardMaterial(`${nodeData.id}_glow_mat`, scene);
     glowMat.diffuseColor = finalColor;
     glowMat.emissiveColor = finalColor;
-    glowMat.alpha = isObserver ? 0.24 : isProject ? 0.12 : 0.16;
+    glowMat.alpha = isObserver ? 0.1 : isProject ? 0.12 : 0.16;
     glowMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
     glowMat.backFaceCulling = false;
     glow.material = glowMat;
@@ -165,106 +167,290 @@ export class Node3D {
     let projectOrbit: BABYLON.Mesh | null = null;
     let iconPlane: BABYLON.Mesh | null = null;
 
-    // Ojo 3D del observador: aro elíptico + pupila sobre la esfera turquesa
+    // Ojo del observador: textura premium con transparencia sobre el nodo pickable.
     if (isObserver) {
+      const reducedMotion = typeof window !== 'undefined'
+        && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
       eyeRing = BABYLON.MeshBuilder.CreateTorus(
-        `${nodeData.id}_eye_ring`,
-        { diameter: nodeData.size * 0.68, thickness: nodeData.size * 0.045, tessellation: 72 },
+        `${nodeData.id}_eye_orbit`,
+        { diameter: nodeData.size * 1.52, thickness: nodeData.size * 0.008, tessellation: 144 },
         scene
       );
-      eyeRing.position = sphere.position.clone().add(new BABYLON.Vector3(0, 0, -nodeData.size * 0.53));
-      eyeRing.scaling.x = 1.65;
-      eyeRing.scaling.y = 0.55;
+      eyeRing.position = sphere.position.clone().add(new BABYLON.Vector3(0, nodeData.size * 0.04, 0));
+      eyeRing.scaling.x = 1.18;
+      eyeRing.scaling.y = 0.84;
       eyeRing.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
-      const eyeMat = new BABYLON.StandardMaterial(`${nodeData.id}_eye_ring_mat`, scene);
-      eyeMat.emissiveColor = new BABYLON.Color3(0.42, 1, 1);
-      eyeMat.diffuseColor = new BABYLON.Color3(0.42, 1, 1);
+      const eyeMat = new BABYLON.StandardMaterial(`${nodeData.id}_eye_orbit_mat`, scene);
+      eyeMat.emissiveColor = new BABYLON.Color3(0.14, 0.72, 0.88);
+      eyeMat.diffuseColor = new BABYLON.Color3(0.14, 0.72, 0.88);
       eyeMat.alpha = 0.18;
+      eyeMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
       eyeRing.material = eyeMat;
       eyeRing.isPickable = false;
 
-      pupil = BABYLON.MeshBuilder.CreateSphere(
-        `${nodeData.id}_pupil`,
-        { diameter: nodeData.size * 0.22, segments: 24 },
-        scene
-      );
-      pupil.position = sphere.position.clone().add(new BABYLON.Vector3(0, 0, -nodeData.size * 0.6));
-      const pupilMat = new BABYLON.StandardMaterial(`${nodeData.id}_pupil_mat`, scene);
-      pupilMat.emissiveColor = new BABYLON.Color3(0.85, 1, 1);
-      pupilMat.diffuseColor = new BABYLON.Color3(0.75, 1, 1);
-      pupilMat.alpha = 0.0;
-      pupil.material = pupilMat;
-      pupil.isPickable = false;
-
-      const eyeTexture = new BABYLON.DynamicTexture(`${nodeData.id}_eye_texture`, { width: 512, height: 256 }, scene, true);
+      const eyeTextureSize = { width: 1024, height: 512 };
+      const eyeTexture = new BABYLON.DynamicTexture(`${nodeData.id}_eye_texture`, eyeTextureSize, scene, true);
       eyeTexture.hasAlpha = true;
       const eyeContext = eyeTexture.getContext() as unknown as CanvasRenderingContext2D;
-      eyeContext.clearRect(0, 0, 512, 256);
-      eyeContext.shadowColor = 'rgba(251, 191, 36, 1)';
-      eyeContext.shadowBlur = 36;
-      eyeContext.fillStyle = 'rgba(253, 224, 71, 0.12)';
-      eyeContext.strokeStyle = 'rgba(254, 240, 138, 1)';
-      eyeContext.lineWidth = 24;
-      eyeContext.beginPath();
-      eyeContext.moveTo(52, 128);
-      eyeContext.bezierCurveTo(122, 38, 390, 38, 460, 128);
-      eyeContext.bezierCurveTo(390, 218, 122, 218, 52, 128);
-      eyeContext.closePath();
-      eyeContext.fill();
-      eyeContext.stroke();
-      eyeContext.shadowBlur = 24;
-      eyeContext.fillStyle = 'rgba(250, 204, 21, 0.96)';
-      eyeContext.beginPath();
-      eyeContext.arc(256, 128, 57, 0, Math.PI * 2);
-      eyeContext.fill();
-      eyeContext.fillStyle = 'rgba(67, 20, 7, 0.94)';
-      eyeContext.beginPath();
-      eyeContext.arc(256, 128, 25, 0, Math.PI * 2);
-      eyeContext.fill();
-      eyeContext.fillStyle = 'rgba(255, 251, 235, 0.95)';
-      eyeContext.beginPath();
-      eyeContext.arc(238, 110, 10, 0, Math.PI * 2);
-      eyeContext.fill();
-      eyeTexture.update();
 
-      const eyePlane = BABYLON.MeshBuilder.CreatePlane(`${nodeData.id}_eye_plane`, { width: nodeData.size * 1.48, height: nodeData.size * 0.76 }, scene);
-      eyePlane.position = sphere.position.clone().add(new BABYLON.Vector3(0, nodeData.size * 0.02, 0));
+      const drawMetalEye = (irisOffsetX = 0, irisOffsetY = 0, shimmer = 0) => {
+        const ctx = eyeContext;
+        const width = eyeTextureSize.width;
+        const height = eyeTextureSize.height;
+        const cx = width / 2;
+        const cy = height / 2;
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Halo contenido detrás del ojo, sin disco sólido.
+        const halo = ctx.createRadialGradient(cx, cy, 36, cx, cy, 328);
+        halo.addColorStop(0, 'rgba(34, 211, 238, 0.16)');
+        halo.addColorStop(0.48, 'rgba(14, 116, 144, 0.08)');
+        halo.addColorStop(1, 'rgba(2, 6, 23, 0)');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 330, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Silueta exterior metálica superior e inferior.
+        const shellGradient = ctx.createLinearGradient(0, 96, width, 392);
+        shellGradient.addColorStop(0, 'rgba(5, 18, 28, 0.02)');
+        shellGradient.addColorStop(0.18, 'rgba(78, 105, 120, 0.55)');
+        shellGradient.addColorStop(0.42, 'rgba(203, 229, 238, 0.88)');
+        shellGradient.addColorStop(0.62, 'rgba(31, 61, 76, 0.8)');
+        shellGradient.addColorStop(0.82, 'rgba(42, 184, 213, 0.5)');
+        shellGradient.addColorStop(1, 'rgba(167, 139, 250, 0.22)');
+
+        ctx.shadowColor = 'rgba(34, 211, 238, 0.34)';
+        ctx.shadowBlur = 24;
+        ctx.fillStyle = shellGradient;
+        ctx.strokeStyle = 'rgba(185, 224, 235, 0.82)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(102, 256);
+        ctx.bezierCurveTo(212, 132, 390, 82, 540, 96);
+        ctx.bezierCurveTo(690, 110, 822, 166, 930, 246);
+        ctx.bezierCurveTo(812, 220, 704, 220, 613, 246);
+        ctx.bezierCurveTo(548, 264, 480, 270, 402, 250);
+        ctx.bezierCurveTo(292, 222, 194, 224, 102, 256);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        const lowerGradient = ctx.createLinearGradient(0, 270, width, 430);
+        lowerGradient.addColorStop(0, 'rgba(2, 12, 22, 0.02)');
+        lowerGradient.addColorStop(0.2, 'rgba(56, 83, 99, 0.58)');
+        lowerGradient.addColorStop(0.52, 'rgba(10, 31, 43, 0.9)');
+        lowerGradient.addColorStop(0.78, 'rgba(34, 211, 238, 0.45)');
+        lowerGradient.addColorStop(1, 'rgba(148, 163, 184, 0.18)');
+        ctx.fillStyle = lowerGradient;
+        ctx.strokeStyle = 'rgba(148, 198, 214, 0.78)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(102, 278);
+        ctx.bezierCurveTo(216, 316, 316, 316, 410, 286);
+        ctx.bezierCurveTo(484, 262, 552, 260, 616, 286);
+        ctx.bezierCurveTo(710, 326, 820, 318, 932, 278);
+        ctx.bezierCurveTo(804, 394, 676, 434, 512, 426);
+        ctx.bezierCurveTo(350, 418, 216, 370, 102, 278);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Línea cian fina de energía sobre los párpados metálicos.
+        ctx.shadowColor = 'rgba(34, 211, 238, 0.9)';
+        ctx.shadowBlur = 14;
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.92)';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(136, 247);
+        ctx.bezierCurveTo(236, 176, 364, 140, 472, 140);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(554, 140);
+        ctx.bezierCurveTo(696, 144, 822, 192, 910, 248);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(128, 284);
+        ctx.bezierCurveTo(244, 338, 362, 344, 470, 302);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(554, 304);
+        ctx.bezierCurveTo(690, 342, 820, 330, 922, 284);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Iris con profundidad: azul petróleo/zafiro, fibras radiales y acento violeta.
+        const irisCx = cx + irisOffsetX;
+        const irisCy = cy + irisOffsetY;
+        const irisRadius = 126;
+        const irisOuter = ctx.createRadialGradient(irisCx, irisCy, 16, irisCx, irisCy, irisRadius);
+        irisOuter.addColorStop(0, 'rgba(5, 15, 24, 1)');
+        irisOuter.addColorStop(0.18, 'rgba(3, 45, 63, 1)');
+        irisOuter.addColorStop(0.42, 'rgba(7, 111, 143, 1)');
+        irisOuter.addColorStop(0.68, 'rgba(14, 116, 144, 0.98)');
+        irisOuter.addColorStop(0.84, 'rgba(29, 78, 216, 0.92)');
+        irisOuter.addColorStop(1, 'rgba(8, 18, 36, 1)');
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(irisCx, irisCy, irisRadius, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.fillStyle = irisOuter;
+        ctx.fillRect(irisCx - irisRadius, irisCy - irisRadius, irisRadius * 2, irisRadius * 2);
+
+        const violet = ctx.createRadialGradient(irisCx + 64, irisCy + 12, 0, irisCx + 54, irisCy + 6, 104);
+        violet.addColorStop(0, 'rgba(139, 92, 246, 0.72)');
+        violet.addColorStop(0.42, 'rgba(79, 70, 229, 0.28)');
+        violet.addColorStop(1, 'rgba(79, 70, 229, 0)');
+        ctx.fillStyle = violet;
+        ctx.fillRect(irisCx - irisRadius, irisCy - irisRadius, irisRadius * 2, irisRadius * 2);
+
+        for (let i = 0; i < 132; i += 1) {
+          const angle = (i / 132) * Math.PI * 2 + shimmer * 0.08;
+          const inner = 31 + (i % 7) * 3;
+          const outer = 88 + (i % 9) * 4;
+          const alpha = 0.18 + (i % 5) * 0.045;
+          ctx.strokeStyle = i % 11 === 0
+            ? `rgba(167, 139, 250, ${alpha + 0.18})`
+            : i % 3 === 0
+              ? `rgba(103, 232, 249, ${alpha + 0.1})`
+              : `rgba(6, 182, 212, ${alpha})`;
+          ctx.lineWidth = i % 13 === 0 ? 3.4 : 1.35;
+          ctx.beginPath();
+          ctx.moveTo(irisCx + Math.cos(angle) * inner, irisCy + Math.sin(angle) * inner);
+          ctx.lineTo(irisCx + Math.cos(angle + Math.sin(i) * 0.055) * outer, irisCy + Math.sin(angle + Math.cos(i) * 0.045) * outer);
+          ctx.stroke();
+        }
+
+        // Anillos del iris, sin colores cálidos.
+        ctx.strokeStyle = 'rgba(125, 211, 252, 0.58)';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(irisCx, irisCy, 118, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.72)';
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.arc(irisCx, irisCy, 102, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.34)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(irisCx, irisCy, 72, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Lente de cristal y borde de titanio.
+        const glass = ctx.createRadialGradient(irisCx - 30, irisCy - 46, 10, irisCx, irisCy, 132);
+        glass.addColorStop(0, 'rgba(255, 255, 255, 0.36)');
+        glass.addColorStop(0.34, 'rgba(125, 211, 252, 0.1)');
+        glass.addColorStop(1, 'rgba(2, 6, 23, 0.08)');
+        ctx.fillStyle = glass;
+        ctx.beginPath();
+        ctx.arc(irisCx, irisCy, 128, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(148, 190, 205, 0.88)';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.arc(irisCx, irisCy, 132, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(8, 15, 26, 0.88)';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(irisCx, irisCy, 139, 0, Math.PI * 2);
+        ctx.stroke();
+
+        const pupilGradient = ctx.createRadialGradient(irisCx - 18, irisCy - 18, 10, irisCx, irisCy, 57);
+        pupilGradient.addColorStop(0, 'rgba(10, 18, 26, 1)');
+        pupilGradient.addColorStop(0.56, 'rgba(0, 2, 8, 1)');
+        pupilGradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
+        ctx.fillStyle = pupilGradient;
+        ctx.beginPath();
+        ctx.arc(irisCx, irisCy, 56, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Reflejos de cristal.
+        ctx.fillStyle = 'rgba(241, 250, 255, 0.95)';
+        ctx.beginPath();
+        ctx.arc(irisCx + 30, irisCy - 45, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(224, 242, 254, 0.48)';
+        ctx.beginPath();
+        ctx.moveTo(irisCx - 86, irisCy - 78);
+        ctx.bezierCurveTo(irisCx - 54, irisCy - 116, irisCx - 7, irisCy - 110, irisCx + 22, irisCy - 84);
+        ctx.bezierCurveTo(irisCx - 26, irisCy - 86, irisCx - 58, irisCy - 66, irisCx - 86, irisCy - 78);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(226, 232, 240, 0.24)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(irisCx - 110, irisCy - 20);
+        ctx.bezierCurveTo(irisCx - 74, irisCy - 90, irisCx - 36, irisCy - 120, irisCx + 54, irisCy - 118);
+        ctx.stroke();
+
+        // Puntas y borde final definidos.
+        ctx.shadowColor = 'rgba(34, 211, 238, 0.55)';
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = 'rgba(203, 213, 225, 0.78)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(95, 256);
+        ctx.bezierCurveTo(232, 118, 390, 68, 512, 92);
+        ctx.bezierCurveTo(658, 68, 804, 128, 936, 256);
+        ctx.bezierCurveTo(800, 384, 652, 432, 512, 416);
+        ctx.bezierCurveTo(372, 430, 220, 384, 95, 256);
+        ctx.stroke();
+        ctx.restore();
+        eyeTexture.update();
+      };
+
+      drawMetalEye();
+
+      const eyePlane = BABYLON.MeshBuilder.CreatePlane(
+        `${nodeData.id}_eye_plane`,
+        { width: nodeData.size * 1.92, height: nodeData.size * 0.96 },
+        scene
+      );
+      eyePlane.position = sphere.position.clone().add(new BABYLON.Vector3(0, nodeData.size * 0.12, -nodeData.size * 0.02));
       eyePlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
       eyePlane.renderingGroupId = 2;
       eyePlane.isPickable = false;
       const eyePlaneMat = new BABYLON.StandardMaterial(`${nodeData.id}_eye_plane_mat`, scene);
       eyePlaneMat.diffuseTexture = eyeTexture;
       eyePlaneMat.opacityTexture = eyeTexture;
-      eyePlaneMat.emissiveColor = new BABYLON.Color3(1, 0.82, 0.18);
+      eyePlaneMat.emissiveColor = new BABYLON.Color3(0.62, 0.92, 1);
       eyePlaneMat.disableLighting = true;
       eyePlaneMat.backFaceCulling = false;
       eyePlaneMat.disableDepthWrite = true;
       eyePlane.material = eyePlaneMat;
 
+      let eyeFrame = 0;
       scene.registerBeforeRender(() => {
         eyePlane.position.x = sphere.position.x;
-        eyePlane.position.y = sphere.position.y + nodeData.size * 0.02;
-        eyePlane.position.z = sphere.position.z;
-      });
+        eyePlane.position.y = sphere.position.y + nodeData.size * 0.12;
+        eyePlane.position.z = sphere.position.z - nodeData.size * 0.02;
 
-      const highlight = BABYLON.MeshBuilder.CreateSphere(
-        `${nodeData.id}_highlight`,
-        { diameter: nodeData.size * 0.22, segments: 24 },
-        scene
-      );
-      highlight.position = sphere.position.clone().add(new BABYLON.Vector3(-nodeData.size * 0.22, nodeData.size * 0.24, -nodeData.size * 0.42));
-      const highlightMat = new BABYLON.StandardMaterial(`${nodeData.id}_highlight_mat`, scene);
-      highlightMat.emissiveColor = new BABYLON.Color3(1, 0.86, 0.32);
-      highlightMat.diffuseColor = new BABYLON.Color3(1, 0.86, 0.32);
-      highlightMat.alpha = 0.0;
-      highlightMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
-      highlight.material = highlightMat;
-      highlight.isPickable = false;
+        if (eyeRing) {
+          eyeRing.rotation.z += reducedMotion ? 0 : 0.0016;
+          eyeRing.position.x = sphere.position.x;
+          eyeRing.position.y = sphere.position.y + nodeData.size * 0.04;
+          eyeRing.position.z = sphere.position.z;
+          eyeMat.alpha = 0.14 + Math.sin(time * 0.42) * 0.025;
+        }
 
-      scene.registerBeforeRender(() => {
-        highlight.position.x = sphere.position.x - nodeData.size * 0.22;
-        highlight.position.y = sphere.position.y + nodeData.size * 0.24;
-        highlight.position.z = sphere.position.z - nodeData.size * 0.42;
+        eyeFrame += 1;
+        if (eyeFrame % (reducedMotion ? 18 : 4) === 0) {
+          const engine = scene.getEngine();
+          const renderWidth = engine.getRenderWidth() || 1;
+          const renderHeight = engine.getRenderHeight() || 1;
+          const pointerX = Number.isFinite(scene.pointerX) ? scene.pointerX : renderWidth / 2;
+          const pointerY = Number.isFinite(scene.pointerY) ? scene.pointerY : renderHeight / 2;
+          const offsetX = reducedMotion ? Math.sin(time * 0.18) * 3 : Math.max(-18, Math.min(18, ((pointerX / renderWidth) - 0.5) * 28));
+          const offsetY = reducedMotion ? Math.cos(time * 0.16) * 2 : Math.max(-10, Math.min(10, ((pointerY / renderHeight) - 0.5) * 16));
+          drawMetalEye(offsetX, offsetY, time);
+        }
       });
     }
 
