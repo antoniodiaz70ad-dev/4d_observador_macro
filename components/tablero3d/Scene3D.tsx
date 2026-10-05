@@ -822,7 +822,7 @@ function Scene3D() {
       )}
 
       {/* Controles inferiores y memoria del mapa */}
-      <div className="pointer-events-none absolute bottom-7 left-7 right-7 z-50 space-y-5 xl:right-[388px]">
+      <div className="pointer-events-none absolute bottom-7 left-7 right-7 z-50 space-y-5 2xl:right-[388px]">
         <div className="pointer-events-auto flex flex-wrap items-center gap-3">
           <button
             onClick={() => frameNodes()}
@@ -880,7 +880,7 @@ function Scene3D() {
         )}
 
         <Card className="pointer-events-auto border-blue-200/20 bg-slate-950/55 p-4 shadow-2xl shadow-blue-950/30 backdrop-blur-xl">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 lg:grid-cols-[auto_minmax(180px,240px)_auto] xl:grid-cols-[auto_240px_minmax(260px,1fr)_auto]">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 lg:grid-cols-[auto_minmax(180px,240px)_auto] 2xl:grid-cols-[auto_240px_minmax(260px,1fr)_auto]">
             <div className="flex h-12 w-12 items-center justify-center rounded-full border border-blue-200/20 bg-blue-400/10">
               <Layers className="h-6 w-6 text-blue-100" />
             </div>
@@ -888,7 +888,7 @@ function Scene3D() {
               <p className="text-base font-semibold text-white">Memoria del mapa</p>
               <p className="text-xs text-blue-200/70">{timelineHelpText}</p>
             </div>
-            <div className="hidden min-w-0 items-center gap-0 xl:flex">
+            <div className="hidden min-w-0 items-center gap-0 2xl:flex">
               {timelineSnapshots.length === 0 ? (
                 <div className="flex w-full items-center justify-center rounded-2xl border border-blue-200/15 bg-slate-950/35 px-4 py-3 text-sm text-blue-200/60">
                   Sin capturas reales todavía
