@@ -680,7 +680,7 @@ function Scene3D() {
             Tu mapa, conectado
           </h1>
           <p className="mt-1 text-[18px] text-blue-200/85">
-            {stats.total} nodos · {stats.connections} vínculos
+            {stats.total} {stats.total === 1 ? 'nodo' : 'nodos'} · {stats.connections} {stats.connections === 1 ? 'vínculo' : 'vínculos'}
           </p>
         </div>
 
@@ -822,7 +822,7 @@ function Scene3D() {
       )}
 
       {/* Controles inferiores y memoria del mapa */}
-      <div className="pointer-events-none absolute bottom-7 left-7 right-[388px] z-50 space-y-5">
+      <div className="pointer-events-none absolute bottom-7 left-7 right-7 z-50 space-y-5 xl:right-[388px]">
         <div className="pointer-events-auto flex flex-wrap items-center gap-3">
           <button
             onClick={() => frameNodes()}
@@ -880,7 +880,7 @@ function Scene3D() {
         )}
 
         <Card className="pointer-events-auto border-blue-200/20 bg-slate-950/55 p-4 shadow-2xl shadow-blue-950/30 backdrop-blur-xl">
-          <div className="grid grid-cols-[auto_240px_minmax(300px,1fr)_auto] items-center gap-3">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 lg:grid-cols-[auto_minmax(180px,240px)_auto] xl:grid-cols-[auto_240px_minmax(260px,1fr)_auto]">
             <div className="flex h-12 w-12 items-center justify-center rounded-full border border-blue-200/20 bg-blue-400/10">
               <Layers className="h-6 w-6 text-blue-100" />
             </div>
@@ -888,7 +888,7 @@ function Scene3D() {
               <p className="text-base font-semibold text-white">Memoria del mapa</p>
               <p className="text-xs text-blue-200/70">{timelineHelpText}</p>
             </div>
-            <div className="hidden min-w-0 items-center gap-0 lg:flex">
+            <div className="hidden min-w-0 items-center gap-0 xl:flex">
               {timelineSnapshots.length === 0 ? (
                 <div className="flex w-full items-center justify-center rounded-2xl border border-blue-200/15 bg-slate-950/35 px-4 py-3 text-sm text-blue-200/60">
                   Sin capturas reales todavía
@@ -915,7 +915,7 @@ function Scene3D() {
                 })
               )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="col-span-2 flex min-w-0 items-center gap-3 lg:col-span-1 lg:justify-end">
               <button disabled={timelineSnapshots.length < 2} title={timelineSnapshots.length < 2 ? 'Necesitas al menos dos capturas reales para reproducir la evolución.' : 'Reproducir evolución'} className="flex h-12 w-12 items-center justify-center rounded-full border border-blue-200/30 bg-slate-950/50 text-blue-100 hover:bg-blue-400/10 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-slate-950/50" aria-label="Reproducir evolución">
                 <Play className="h-4 w-4 fill-current" />
               </button>
