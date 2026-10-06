@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
+import { DataSourceNote, IndicatorClarity } from '@/components/ui/indicator-clarity';
 import { 
   Zap, 
   TrendingUp, 
@@ -218,7 +219,7 @@ export function EnergyFlows() {
           <Zap className="h-12 w-12 mx-auto text-slate-500 mb-4" />
           <p className="font-semibold text-slate-200">Sin datos suficientes para calcular flujos</p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
-            Los porcentajes aparecerán cuando existan proyectos activos o relaciones registradas. No se muestran áreas ni balances de ejemplo.
+            Los porcentajes aparecerán cuando existan proyectos activos o relaciones registradas. Energía significa atención o esfuerzo registrado; no es una medición física.
           </p>
           <p className="mt-3 text-xs text-slate-600">
             Fuente actual: {energyData.signalCounts?.projects || 0} proyectos · {energyData.signalCounts?.relationships || 0} relaciones
@@ -266,6 +267,14 @@ export function EnergyFlows() {
       </CardHeader>
       
       <CardContent className="space-y-6">
+        <IndicatorClarity />
+
+        <DataSourceNote title={isEditing ? 'Fuente: distribución manual' : 'Fuente: cálculo desde proyectos y relaciones'} tone="yellow">
+          {isEditing
+            ? 'Estás probando una distribución manual. Los porcentajes no son diagnóstico hasta aplicar cambios y conservar su fuente.'
+            : 'Los flujos reparten la energía registrada en proyectos y relaciones. Cada porcentaje debe poder rastrearse al valor bruto y a su fórmula.'}
+        </DataSourceNote>
+
         <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-4">
           <p className="text-sm font-semibold text-yellow-100">Fuente y cálculo</p>
           <p className="mt-2 text-xs leading-relaxed text-slate-400">

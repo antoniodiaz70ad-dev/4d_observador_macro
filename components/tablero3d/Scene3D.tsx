@@ -974,6 +974,10 @@ function Scene3D() {
                 </p>
               </div>
 
+              <div className="mb-5 rounded-2xl border border-cyan-200/15 bg-cyan-300/[0.045] p-3 text-xs leading-relaxed text-blue-100/70">
+                Energía y coherencia aquí son valores fuente del nodo. El mapa no emite diagnóstico hasta completar las señales requeridas.
+              </div>
+
               <div className="mb-5 space-y-4">
                 <div>
                   <div className="mb-2 flex items-center justify-between text-sm">

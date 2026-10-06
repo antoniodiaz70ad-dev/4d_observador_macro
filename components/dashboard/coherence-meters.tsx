@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Brain, Heart, Zap, Activity, Settings } from 'lucide-react';
+import { DataSourceNote, IndicatorClarity } from '@/components/ui/indicator-clarity';
 import {
   PieChart,
   Pie,
@@ -154,6 +155,16 @@ export function CoherenceMeters() {
       </CardHeader>
       
       <CardContent className="space-y-6">
+        <IndicatorClarity />
+
+        <DataSourceNote title={isEditing ? 'Fuente: borrador manual' : hasRealMetrics ? 'Fuente: cálculo con registros suficientes' : 'Fuente: sin datos suficientes'} tone={hasRealMetrics ? 'purple' : 'cyan'}>
+          {isEditing
+            ? 'Los valores que ajustes aquí son una captura manual hasta guardar. No equivalen a un diagnóstico calculado.'
+            : hasRealMetrics
+              ? 'La coherencia se presenta como cálculo derivado de señales disponibles. Úsala como lectura de contexto, no como medición absoluta.'
+              : 'Faltan proyecto, relación o registro diario. Por eso se ocultan porcentajes, gráficos y clasificación.'}
+        </DataSourceNote>
+
         {!hasRealMetrics && !isEditing && (
           <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-5 text-center">
             <p className="text-sm font-semibold text-purple-200">Aún no hay coherencia calculada con tus registros</p>

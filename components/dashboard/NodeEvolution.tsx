@@ -160,10 +160,10 @@ export function NodeEvolution() {
           <Activity className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="text-lg font-medium text-slate-300 mb-2">Sin datos de evolución</h3>
           <p className="text-sm text-slate-500 mb-4">
-            Las capturas se generarán automáticamente cuando cambien tus nodos.
+            Esta sección muestra snapshots del mapa cuando cambian nodos o cuando guardas una captura desde Tablero 3D.
           </p>
           <p className="text-xs text-slate-600">
-            También puedes crear capturas manuales desde el Tablero 3D
+            Memory 4D guarda capturas comparativas; este panel resume evolución operativa de nodos.
           </p>
         </div>
       </Card>
@@ -177,8 +177,8 @@ export function NodeEvolution() {
         <div className="flex items-center gap-3">
           <Activity className="w-6 h-6 text-cyan-400" />
           <div>
-            <h3 className="text-lg font-semibold text-white">Evolución de Nodos</h3>
-            <p className="text-xs text-slate-400">Seguimiento de cambios en energía y coherencia</p>
+            <h3 className="text-lg font-semibold text-white">Cambios entre capturas — Evolución de nodos</h3>
+            <p className="text-xs text-slate-400">Snapshots del mapa: energía, coherencia fuente, conexiones y fechas</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

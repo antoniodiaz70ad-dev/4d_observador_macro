@@ -189,7 +189,7 @@ export function TimelineViewer() {
       case 'future':
         return '🚀 Futuro';
       default:
-        return '📅 Timeline';
+        return '📅 Historial';
     }
   };
 
@@ -199,7 +199,7 @@ export function TimelineViewer() {
         <CardHeader>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">
             <Calendar className="h-8 w-8 text-indigo-400" />
-            Timeline Cuántico
+            Historial diario — Timeline
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -214,11 +214,16 @@ export function TimelineViewer() {
   return (
     <Card className="bg-gradient-to-br from-slate-900/90 to-indigo-900/30 border-indigo-500/30 backdrop-blur-sm">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">
-            <Calendar className="h-8 w-8 text-indigo-400" />
-            Timeline Cuántico
-          </CardTitle>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">
+              <Calendar className="h-8 w-8 text-indigo-400" />
+              Historial diario — Timeline
+            </CardTitle>
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-400">
+              Aquí viven eventos y decisiones por fecha. Memory 4D guarda capturas comparativas; Evolución de nodos resume cambios del mapa.
+            </p>
+          </div>
           <Button 
             variant="ghost" 
             size="sm"

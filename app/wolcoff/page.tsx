@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import WolcoffScene from '@/components/wolcoff/WolcoffScene';
+import { DataSourceNote } from '@/components/ui/indicator-clarity';
 
 export default function WolcoffPage() {
   const [coherence, setCoherence] = useState(0.7);
@@ -106,10 +107,10 @@ export default function WolcoffPage() {
             <div className="bg-black/70 backdrop-blur-sm rounded-lg p-3 text-right">
               <p className="text-cyan-400 font-mono text-xs tracking-wider">WOLCOFF ENGINE v1.0</p>
               <p className="text-white text-sm mt-1">
-                Coherencia: <span style={{ color: state.color }} className="font-bold">{(coherence * 100).toFixed(0)}%</span>
+                Coherencia {mode === 'manual' ? 'manual' : 'IA'}: <span style={{ color: state.color }} className="font-bold">{(coherence * 100).toFixed(0)}%</span>
               </p>
               <p className="text-white text-sm">
-                Energía: <span className="text-yellow-400 font-bold">{(energy * 100).toFixed(0)}%</span>
+                Energía {mode === 'manual' ? 'manual' : 'IA'}: <span className="text-yellow-400 font-bold">{(energy * 100).toFixed(0)}%</span>
               </p>
             </div>
           </div>
@@ -121,7 +122,7 @@ export default function WolcoffPage() {
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">{state.emoji}</span>
                   <div>
-                    <p className="text-sm text-slate-400">Estado Geométrico</p>
+                    <p className="text-sm text-slate-400">Estado geométrico · {mode === 'manual' ? 'manual' : 'IA'}</p>
                     <p className="text-xl font-bold" style={{ color: state.color }}>
                       {state.label}
                     </p>
@@ -157,6 +158,16 @@ export default function WolcoffPage() {
               Visualiza tu estado energético en tiempo real
             </p>
           </div>
+
+          <DataSourceNote
+            title={mode === 'manual' ? 'Escenario manual' : 'Análisis desde texto'}
+            tone={mode === 'manual' ? 'cyan' : 'purple'}
+            className="mb-5"
+          >
+            {mode === 'manual'
+              ? 'Los porcentajes de Wolcoff son una simulación controlada por sliders. Sirven para explorar escenarios y no sustituyen la coherencia calculada con registros.'
+              : 'La IA estima coherencia y energía desde el texto que escribes aquí. Identifica el origen como análisis de texto, no como lectura completa de todo el sistema.'}
+          </DataSourceNote>
 
           {/* Tabs: Manual / IA */}
           <div className="flex gap-2 mb-6">

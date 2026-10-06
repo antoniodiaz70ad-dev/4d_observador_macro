@@ -13,6 +13,7 @@ import {
   type MemoryState,
   type TrailPoint,
 } from '@/packages/memory-4d/src';
+import { HistoryClarity } from '@/components/ui/indicator-clarity';
 
 type SnapshotRow = {
   id: string;
@@ -232,14 +233,15 @@ export function Memory4DExplorer({ initialSnapshots = [], demo = false }: { init
                 Centro de memoria temporal
               </div>
               <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                Memory 4D
+                Historial — Memory 4D
                 <span className="block bg-gradient-to-r from-cyan-200 via-purple-200 to-amber-100 bg-clip-text text-2xl text-transparent md:text-4xl">
-                  observa tiempo, evidencia y decisiones.
+                  compara evidencia antes y después de decidir.
                 </span>
               </h1>
               <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
-                Capturas manuales, tiempo de evento, tiempo de conocimiento, evidencia y decisiones. El historial empieza cuando se captura y se puede leer como mapa 3D/4D.
+                Capturas manuales, tiempo de evento, tiempo de conocimiento, evidencia y decisiones. El historial empieza cuando se captura información real; la demo solo ilustra el comportamiento sin guardar datos.
               </p>
+              <HistoryClarity className="mt-5 max-w-4xl" />
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 {!demo && (
                   <Link href="/memoria-4d/demo" className="rounded-xl border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-500/20">
